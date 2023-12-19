@@ -5,4 +5,5 @@ public enum EntityName
     Category,
     Question,
     User,
+    Commentary
 }

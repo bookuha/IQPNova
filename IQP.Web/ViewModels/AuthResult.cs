@@ -2,7 +2,7 @@ using IQP.Application.Contracts.Users.Responses;
 
 namespace IQP.Web.ViewModels;
 
-public class JwtResult
+public class AuthResult
 {
     public required string Token { get; set; }
     public DateTime Expiration { get; set; }

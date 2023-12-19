@@ -10,6 +10,10 @@ public class QuestionConfiguration : IEntityTypeConfiguration<Question>
     {
         builder
             .HasKey(q => q.Id);
+        
+        builder
+            .Property(q => q.Created)
+            .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
         builder
             .Property<string>(q => q.Title)

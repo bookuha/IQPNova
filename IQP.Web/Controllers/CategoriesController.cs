@@ -2,6 +2,7 @@ using IQP.Application.Contracts.Categories.Commands;
 using IQP.Application.Contracts.Categories.Responses;
 using IQP.Application.Services;
 using IQP.Web.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace IQP.Web.Controllers;
@@ -17,7 +18,7 @@ public class CategoriesController : ControllerBase
         _categoriesService = categoriesService;
     }
 
-    
+    [Authorize]
     [HttpPost]
     public async Task<ActionResult<CategoryResponse>> CreateCategory([FromBody] CreateCategoryRequest request)
     {
@@ -44,6 +45,7 @@ public class CategoriesController : ControllerBase
         return Ok(result);
     }
     
+    [Authorize]
     [HttpPut("{id}")]
     public async Task<ActionResult<CategoryResponse>> UpdateCategory(Guid id, [FromBody] UpdateCategoryRequest request)
     {
@@ -54,6 +56,7 @@ public class CategoriesController : ControllerBase
         return Ok(result);
     }
     
+    [Authorize]
     [HttpDelete("{id}")]
     public async Task<ActionResult<CategoryResponse>> DeleteCategory(Guid id)
     {

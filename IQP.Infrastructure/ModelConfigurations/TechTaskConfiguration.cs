@@ -10,6 +10,10 @@ public class TechTaskConfiguration : IEntityTypeConfiguration<TechTask>
     {
         builder
             .HasKey(t => t.Id);
+        
+        builder
+            .Property(t=>t.Created)
+            .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
         builder
             .Property<string>(t => t.Title)
@@ -20,6 +24,10 @@ public class TechTaskConfiguration : IEntityTypeConfiguration<TechTask>
             .Property<string>(t => t.Description)
             .HasMaxLength(320)
             .IsRequired();
+
+        builder
+            .Property(t => t.ActiveUntil)
+            .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
         builder
             .HasOne<User>(t => t.Creator)

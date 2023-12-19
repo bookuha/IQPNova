@@ -14,6 +14,7 @@ public class IqpDbContext : IdentityDbContext<User, IdentityRole<Guid>, Guid>
     
     public DbSet<Question> Questions { get; set; }
     public DbSet<Category> Categories { get; set; }
+    public DbSet<Commentary> Commentaries { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

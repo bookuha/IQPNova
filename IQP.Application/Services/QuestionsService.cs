@@ -38,8 +38,6 @@ public class QuestionsService : IQuestionsService
         {
             throw new ValidationException(EntityName.Question, commandValidationResult.ToDictionary());
         }
-        
-        // TODO: Add similar question title check here
 
         var category = await _db.Categories.FindAsync(command.CategoryId);
         
@@ -50,14 +48,16 @@ public class QuestionsService : IQuestionsService
                 "The category with such id does not exist. Therefore question cannot be created.");
         }
         
+        var user = await _db.Users.FindAsync(_currentUser.UserId.Value); // TODO: Add null check here / do something at all
+
         var question = new Question
         {
             Title = command.Title,
             Description = command.Description,
-            CreatorId = _currentUser.UserId.Value,
+            Creator = user,
             CategoryId = command.CategoryId
         };
-        
+
         _db.Add(question);
         await _db.SaveChangesAsync();
         
@@ -68,20 +68,45 @@ public class QuestionsService : IQuestionsService
 
     public async Task<IEnumerable<QuestionResponse>> GetQuestions()
     {
-        return await _db.Questions.Select(q => q.ToResponse()).ToListAsync();
+        var query = _db.Questions
+            .Include(q => q.Category)
+            .Include(q => q.LikedBy)
+            .Include(q => q.Commentaries)
+            .Include(q => q.Creator);
+        
+        if (!_currentUser.IsAuthenticated)
+        {
+            return await query
+                .Select(q => q.ToResponse(false))
+                .AsSplitQuery()
+                .ToListAsync();
+        }
+        
+        return await query
+            .Select(q => q.ToResponse(q.LikedBy.Any(u => u.Id == _currentUser.UserId)))
+            .AsSplitQuery()
+            .ToListAsync();
     }
 
     public async Task<QuestionResponse> GetQuestionById(Guid id)
     {
-        var question = await _db.Questions.FindAsync(id);
+        var question = await 
+            _db.Questions
+                .Include(q=>q.Category)        
+                .Include(q=>q.LikedBy)
+                .Include(q=>q.Commentaries)
+                .Include(q=>q.Creator)
+            .SingleOrDefaultAsync(q => q.Id == id);
 
         if (question is null)
         {
             throw new IqpException(
                 EntityName.Question,Errors.NotFound.ToString(), "Not found", "The question with such id does not exist.");
         }
-        
-        return question.ToResponse();
+
+        if (!_currentUser.IsAuthenticated) return question.ToResponse();
+        var isLiked = question.LikedBy.Any(u => u.Id == _currentUser.UserId);
+        return question.ToResponse(isLiked);
     }
 
     public async Task<QuestionResponse> UpdateQuestion(UpdateQuestionCommand command)
@@ -93,9 +118,22 @@ public class QuestionsService : IQuestionsService
             throw new ValidationException(EntityName.Question, commandValidationResult.ToDictionary());
         }
 
-        // Prevent updating if the user is not the author of the question.
-        
-        var question = await _db.Questions.FindAsync(command.Id);
+        var category = await _db.Categories.FindAsync(command.CategoryId);
+
+        if (category is null)
+        {
+            throw new IqpException(
+                $"{EntityName.Question}.{EntityName.Category}", Errors.NotFound.ToString(), "Category not found",
+                "The category with such id does not exist. Therefore question cannot be updated.");
+        }
+
+        var question = await 
+            _db.Questions
+                .Include(q=>q.Category)
+                .Include(q=>q.LikedBy)
+                .Include(q=>q.Commentaries)
+                .Include(q=>q.Creator)
+                .SingleOrDefaultAsync(q => q.Id == command.Id);
         
         if (question is null)
         {
@@ -103,6 +141,13 @@ public class QuestionsService : IQuestionsService
                 EntityName.Question,Errors.NotFound.ToString(), "Not found", "The question with such id does not exist.");
         }
         
+        if (_currentUser.UserId != question.CreatorId)
+        {
+            throw new IqpException(
+                EntityName.Question, Errors.Restricted.ToString(), "Restricted",
+                "You are not allowed to delete this question.");
+        }
+
         question.Title = command.Title;
         question.Description = command.Description;
         question.CategoryId = command.CategoryId;
@@ -113,22 +158,40 @@ public class QuestionsService : IQuestionsService
         
         _logger.LogInformation("Question with id {QuestionId} has been updated", question.Id);
 
-        return question.ToResponse();
+        var isLiked = question.LikedBy.Any(u=>u.Id == _currentUser.UserId);
+        
+        return question.ToResponse(isLiked);
         
     }
 
     public async Task<QuestionResponse> DeleteQuestion(Guid id)
     {
-        var question = await _db.Questions.FindAsync(id);
+        var question = await 
+            _db.Questions
+                .Include(q=>q.Category)
+                .Include(q=>q.LikedBy)
+                .Include(q=>q.Commentaries)
+                .Include(q=>q.Creator)
+                .SingleOrDefaultAsync(q => q.Id == id);
         
         if (question is null)
         {
             throw new IqpException(
                 EntityName.Question,Errors.NotFound.ToString(), "Not found", "The question with such id does not exist.");
         }
-        
-        // Check if author is the same as the current user. If not, prevent deletion.
-        // Check if there are any commentaries. If so, prevent deletion.
+
+        if (_currentUser.UserId != question.CreatorId)
+        {
+            throw new IqpException(
+                EntityName.Question, Errors.Restricted.ToString(), "Restricted",
+                "You are not allowed to delete this question.");
+        }
+
+        if (question.Commentaries.Any())
+        {
+            throw new IqpException(
+                EntityName.Question, Errors.Restricted.ToString(), "Restricted", "You are not allowed to delete this question because it already has commentaries.");
+        }
 
         _db.Remove(question);
         
@@ -136,25 +199,27 @@ public class QuestionsService : IQuestionsService
         
         _logger.LogInformation("Question with id {QuestionId} has been deleted", question.Id);
         
-        return question.ToResponse();
+        var isLiked = question.LikedBy.Any(u=>u.Id == _currentUser.UserId);
+        
+        return question.ToResponse(isLiked);
     }
 
     public async Task<QuestionResponse> LikeQuestion(Guid id)
     {
-        var question = await _db.Questions.FindAsync(id);
+        var question = await 
+            _db.Questions
+                .Include(q=>q.Category)
+                .Include(q=>q.LikedBy)
+                .Include(q=>q.Commentaries)
+                .Include(q=>q.Creator)
+                .SingleOrDefaultAsync(q => q.Id == id);
 
         if (question is null)
         {
             throw new IqpException(
                 EntityName.Question,Errors.NotFound.ToString(), "Not found", "The question with such id does not exist.");
         }
-
-        if (question.LikedBy.Any(user => user.Id == _currentUser.UserId))
-        {
-            throw new IqpException(
-                EntityName.Question,Errors.WrongFlow.ToString(), "Wrong flow", "You have already liked this question. Maybe you want to undo the like?");
-        }
-
+        
         var currentUser = await _db.Users.FindAsync(_currentUser.UserId);
         if (currentUser is null)
         {
@@ -162,15 +227,23 @@ public class QuestionsService : IQuestionsService
                 EntityName.Question,Errors.Critical.ToString(), "Critical", "Critical authorization error has just occured.");
         }
 
-        question.LikedBy.Add(currentUser);
-
+        var isLikedAlready = question.LikedBy.Any(u=>u.Id == _currentUser.UserId);
+        
+        if (isLikedAlready)
+        {
+            question.LikedBy.Remove(currentUser);
+        }
+        else
+        {
+            question.LikedBy.Add(currentUser);
+        }
         await _db.SaveChangesAsync();
-
-        return question.ToResponse();
+        
+        var isLiked = question.LikedBy.Any(u=>u.Id == _currentUser.UserId);
+        
+        return question.ToResponse(isLiked);
     }
-    
-    // public async Task<QuestionResponse> UndoLikeQuestion(Guid id) // Check how its done on YT
-    
+
     // public async Task<CommentaryResponse> CreateCommentary(CreateCommentaryCommand command)
     
     // public async Task<CommentaryResponse> UpdateCommentary(UpdateCommentaryCommand command) // Not that important for now

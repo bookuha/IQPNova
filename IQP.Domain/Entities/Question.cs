@@ -9,7 +9,7 @@ public class Question
     public required string Description { get; set; }
 
     public HashSet<Commentary> Commentaries { get; set; } = new HashSet<Commentary>();
-    public HashSet<User> LikedBy { get; set; } = new HashSet<User>(); // Create LikedQueetions in User
+    public HashSet<User> LikedBy { get; set; } = new HashSet<User>();
     public Guid CategoryId { get; set; }
     public Category Category { get; set; } = null!;
     public Guid CreatorId { get; set; }

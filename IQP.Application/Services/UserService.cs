@@ -68,6 +68,28 @@ public class UserService : IUserService
 
         return user.ToResponse();
     }
+    
+    /*public async Task<UserStatsResponse> GetUserStats(Guid userId)
+    {
+        var user = await _userManager.FindByIdAsync(userId.ToString());
+
+        if (user is null)
+        {
+            throw new IqpException(
+                EntityName.User, Errors.NotFound.ToString(), "User not found",
+                "The user with such id does not exist.");
+        }
+
+        var stats = new UserStatsResponse
+        {
+            QuestionsCount = user.Questions.Count,
+            CommentariesCount = user.Commentaries.Count,
+            LikedQuestionsCount = user.LikedQuestions.Count,
+            LikedCommentariesCount = user.LikedCommentaries.Count
+        };
+
+        return stats;
+    }*/
 
     public async Task<IEnumerable<Claim>?> GetClaims(Guid userId)
     {

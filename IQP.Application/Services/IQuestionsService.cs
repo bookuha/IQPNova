@@ -10,4 +10,5 @@ public interface IQuestionsService
     public Task<QuestionResponse> GetQuestionById(Guid id);
     public Task<QuestionResponse> UpdateQuestion(UpdateQuestionCommand command);
     public Task<QuestionResponse> DeleteQuestion(Guid id);
+    public Task<QuestionResponse> LikeQuestion(Guid id);
 }

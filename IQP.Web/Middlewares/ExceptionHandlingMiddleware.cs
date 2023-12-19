@@ -96,6 +96,7 @@ public class ExceptionHandlingMiddleware
             "NotFound" => HttpStatusCode.NotFound,
             "Validation" => HttpStatusCode.BadRequest,
             "WrongFlow" => HttpStatusCode.BadRequest,
+            "Restricted" => HttpStatusCode.Forbidden,
             _ => HttpStatusCode.NotImplemented,
 
         };

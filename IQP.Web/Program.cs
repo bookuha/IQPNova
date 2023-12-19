@@ -129,12 +129,24 @@ builder.Services.AddValidatorsFromAssemblyContaining<CreateCategoryCommandValida
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddTransient<ICurrentUserService, CurrentUserService>();
 builder.Services.AddTransient<CategoriesService>();
+builder.Services.AddTransient<QuestionsService>();
+builder.Services.AddTransient<CommentariesService>();
 
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: "AllowLocalhost",
+        builder =>
+            builder.SetIsOriginAllowed(origin => new Uri(origin).Host == "localhost")
+                .AllowAnyHeader()
+                .AllowAnyMethod()
+                .AllowCredentials());
+});
 
 var app = builder.Build();
 
@@ -146,6 +158,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseCors("AllowLocalhost");
 
 app.UseAuthorization();
 

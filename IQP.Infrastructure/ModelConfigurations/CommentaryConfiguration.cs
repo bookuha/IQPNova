@@ -12,6 +12,10 @@ public class CommentaryConfiguration : IEntityTypeConfiguration<Commentary>
             .HasKey(c => c.Id);
 
         builder
+            .Property(c => c.Created)
+            .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+        builder
             .Property<string>(c => c.Content)
             .HasMaxLength(300)
             .IsRequired();

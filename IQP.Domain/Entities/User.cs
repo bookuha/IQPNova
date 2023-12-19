@@ -13,6 +13,7 @@ public class User : IdentityUser<Guid>
 {
     // All the needed properties are inherited from the IdentityUser
     public UserStatus Status { get; set; }
+    // public bool IsAdmin { get; set; }
     public HashSet<Commentary> LikedCommentaries { get; set; } = new HashSet<Commentary>();
     public HashSet<Question> LikedQuestions { get; set; } = new HashSet<Question>();
     public HashSet<Commentary> CreatedCommentaries { get; set; } = new HashSet<Commentary>();

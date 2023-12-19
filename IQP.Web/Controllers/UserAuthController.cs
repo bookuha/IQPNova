@@ -26,22 +26,32 @@ public class UserAuthController : ControllerBase
     
     [HttpPost]
     [Route("register")]
-    public async Task<ActionResult<JwtResult>> Register([FromBody] CreateUserCommand command) // TODO: Change to request
+    public async Task<ActionResult<AuthResult>> Register([FromBody] CreateUserCommand command) // TODO: Change to request
     {
         var user = await _usersService.Register(command);
         var token = await GenerateToken(user.Id);
         
-        return Ok(token);
+        return Ok(new AuthResult
+        {
+            Token = token.Token,
+            Expiration = token.Expiration,
+            UserInfo = user
+        });
     }
     
     [HttpPost]
     [Route("login")]
-    public async Task<ActionResult<JwtResult>> Login(string nickname, string password) // TODO: Change to request
+    public async Task<ActionResult<AuthResult>> Login([FromBody] LoginRequest request) // TODO: Change to request
     {
-        var user = await _usersService.Login(nickname, password);
+        var user = await _usersService.Login(request.Nickname, request.Password);
         var token = await GenerateToken(user.Id);
         
-        return Ok(token);
+        return Ok(new AuthResult
+        {
+            Token = token.Token,
+            Expiration = token.Expiration,
+            UserInfo = user
+        });
     }
     
     [Authorize]

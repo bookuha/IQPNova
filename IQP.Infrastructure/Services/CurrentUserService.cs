@@ -14,8 +14,9 @@ public class CurrentUserService : ICurrentUserService
         _context = context;
     }
 
+    public bool IsAuthenticated => GetUser().Identity?.IsAuthenticated ?? false;
     public Guid? UserId => _currentUserId ??= Guid.Parse(GetUser().FindFirst(ClaimTypes.NameIdentifier)?.Value 
-                                                         ?? throw new InvalidOperationException()); //todo: 
+                                                         ?? throw new InvalidOperationException()); //todo:
     
 
     public bool IsInRole(string role) => GetUser().IsInRole(role);

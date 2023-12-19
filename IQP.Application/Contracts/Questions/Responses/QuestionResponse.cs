@@ -22,13 +22,19 @@ public class QuestionResponse
     public required DateTime Created { get; set; }
     public required string Title { get; set; }
     public required string Description { get; set; }
-    public required Guid CategoryId { get; set; } // Slug?
+    public required Guid CategoryId { get; set; }
+    public required string CategoryTitle { get; set; }
     public required Guid CreatorId { get; set; }
+    public required string CreatorName { get; set; }
+    // TODO: public required bool IsAuthor { get; set; }
+    public required int LikesCount { get; set; }
+    public required int CommentariesCount { get; set; }
+    public bool IsLiked { get; set; }
 }
 
 public static partial class QuestionMappingExtensions
 {
-    public static QuestionResponse ToResponse(this Question question)
+    public static QuestionResponse ToResponse(this Question question, bool isLiked = false)
     {
         return new QuestionResponse
         {
@@ -37,7 +43,12 @@ public static partial class QuestionMappingExtensions
             Title = question.Title,
             Description = question.Description,
             CategoryId = question.CategoryId,
-            CreatorId = question.CreatorId
+            CategoryTitle = question.Category.Title,
+            CreatorId = question.CreatorId,
+            CreatorName = question.Creator?.UserName ?? "Undefined",
+            LikesCount = question.LikedBy.Count,
+            CommentariesCount = question.Commentaries.Count,
+            IsLiked = isLiked
         };
     }
 }
