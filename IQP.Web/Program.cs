@@ -4,6 +4,7 @@ using FluentValidation;
 using IQP.Application.Services;
 using IQP.Application.Services.Validators;
 using IQP.Domain.Entities;
+using IQP.Infrastructure.CodeRunner;
 using IQP.Infrastructure.Data;
 using IQP.Infrastructure.Services;
 using IQP.Web.Middlewares;
@@ -131,7 +132,9 @@ builder.Services.AddTransient<ICurrentUserService, CurrentUserService>();
 builder.Services.AddTransient<CategoriesService>();
 builder.Services.AddTransient<QuestionsService>();
 builder.Services.AddTransient<CommentariesService>();
-
+builder.Services.AddTransient<CodeFileExecutor>();
+builder.Services.AddOptions<CodeFileExecutorOptions>()
+    .Bind(builder.Configuration.GetSection(CodeFileExecutorOptions.CodeFileExecutor));
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

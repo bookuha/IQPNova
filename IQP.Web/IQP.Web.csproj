@@ -33,6 +33,7 @@
     <ItemGroup>
       <ProjectReference Include="..\IQP.Application\IQP.Application.csproj" />
       <ProjectReference Include="..\IQP.Domain\IQP.Domain.csproj" />
+      <ProjectReference Include="..\IQP.Infrastructure.CodeRunner\IQP.Infrastructure.CodeRunner.csproj" />
       <ProjectReference Include="..\IQP.Infrastructure\IQP.Infrastructure.csproj" />
     </ItemGroup>
 
