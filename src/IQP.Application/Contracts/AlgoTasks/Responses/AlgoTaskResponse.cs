@@ -1,4 +1,5 @@
-﻿using IQP.Application.Contracts.AlgoTasks.Utility;
+﻿using IQP.Application.Contracts.CodeLanguages;
+using IQP.Application.Contracts.CodeLanguages.Responses;
 using IQP.Domain.Entities;
 
 namespace IQP.Application.Contracts.AlgoTasks.Responses;

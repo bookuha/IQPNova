@@ -1,6 +1,6 @@
 ﻿using IQP.Domain.Entities;
 
-namespace IQP.Application.Contracts.AlgoTasks.Responses;
+namespace IQP.Application.Contracts.CodeLanguages.Responses;
 
 public class CodeLanguageResponse
 {

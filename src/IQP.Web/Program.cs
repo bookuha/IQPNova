@@ -131,6 +131,7 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddTransient<ICurrentUserService, CurrentUserService>();
 builder.Services.AddTransient<CategoriesService>();
 builder.Services.AddTransient<IAlgoTaskCategoriesService, AlgoTaskCategoriesService>();
+builder.Services.AddTransient<ICodeLanguagesService, CodeLanguagesService>();
 builder.Services.AddTransient<QuestionsService>();
 builder.Services.AddTransient<CommentariesService>();
 builder.Services.AddTransient<ITestRunner, CodeFileExecutor>();
