@@ -15,14 +15,14 @@ namespace IQP.Application.Services;
 public class CategoriesService : ICategoriesService
 {
     private readonly IqpDbContext _db;
-    private readonly CreateCategoryCommandValidator _createQuestionCommandValidator;
+    private readonly CreateCategoryCommandValidator _createCategoryCommandValidator; // Naming is not consistent
     private readonly UpdateCategoryCommandValidator _updateCategoryCommandValidator;
     private readonly ILogger<CategoriesService> _logger;
 
     public CategoriesService(IqpDbContext db, CreateCategoryCommandValidator createCommandValidator, UpdateCategoryCommandValidator updateCategoryCommandValidator, ILogger<CategoriesService> logger)
     {
         _db = db;
-        _createQuestionCommandValidator = createCommandValidator;
+        _createCategoryCommandValidator = createCommandValidator;
         _updateCategoryCommandValidator = updateCategoryCommandValidator;
         _logger = logger;
     }
@@ -34,7 +34,7 @@ public class CategoriesService : ICategoriesService
             throw new ArgumentNullException(nameof(command));
         }
 
-        var commandValidationResult = _createQuestionCommandValidator.Validate(command);
+        var commandValidationResult = _createCategoryCommandValidator.Validate(command);
 
         if (!commandValidationResult.IsValid)
         {
