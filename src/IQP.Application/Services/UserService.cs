@@ -105,6 +105,11 @@ public class UserService : IUserService
             new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
             new Claim(ClaimTypes.Name, user.UserName!),
             new Claim(ClaimTypes.Email, user.Email!),
+            new Claim(
+                "Admin",
+                user.IsAdmin.ToString().ToLower(),
+                ClaimValueTypes.Boolean
+                )
         };
 
         var roles = await _userManager.GetRolesAsync(user);
