@@ -22,72 +22,66 @@ public class ExceptionHandlingMiddleware
         {
             await _next(context);
         }
-        catch (IqpException ex)
-        {
-            await HandleExpectedExceptionAsync(context, ex);
-        }
         catch (Exception ex)
         {
-            await HandleUnexpectedExceptionAsync(context, ex);
+            _logger.LogError(ex, ex.Message);
+            await HttpExceptionHandlingUtilities.WriteExceptionToContextAsync(context, ex);
         }
     }
+}
 
-    private async Task HandleExpectedExceptionAsync(HttpContext context, IqpException e)
+public static class HttpExceptionHandlingUtilities
+{
+    public static async Task WriteExceptionToContextAsync(HttpContext context, Exception exception)
     {
-        _logger.LogError(e, e.Message);
-
         context.Response.ContentType = "application/json";
-        context.Response.StatusCode = (int) ResolveHttpStatusCode(e);
 
-        if (e is ValidationException ve)
+        if (exception is ValidationException iqpvex)
         {
-            var validationProblemDetails = new ValidationProblemDetails(ve.Errors)
+            context.Response.StatusCode = (int) ResolveHttpStatusCode(iqpvex);
+            var validationProblemDetails = new ValidationProblemDetails(iqpvex.Errors)
             {
-                Type = $"{e.EntityName}.{e.Error}",
-                Title = e.Title,
-                Status = (int) ResolveHttpStatusCode(e),
-                Detail = e.Message
+                Type = $"{iqpvex.EntityName}.{iqpvex.Error}",
+                Title = iqpvex.Title,
+                Status = (int) ResolveHttpStatusCode(iqpvex),
+                Detail = exception.Message
             };
 
             var json = JsonSerializer.Serialize(validationProblemDetails);
             await context.Response.WriteAsync(json);
         }
-        else
+        else if (exception is IqpException iqpex)
         {
+            context.Response.StatusCode = (int) ResolveHttpStatusCode(iqpex);
             var problemDetails = new ProblemDetails
             {
-                Status = (int) ResolveHttpStatusCode(e),
-                Type = $"{e.EntityName}.{e.Error}",
-                Title = e.Title,
-                Detail = e.Message,
+                Status = (int) ResolveHttpStatusCode(iqpex),
+                Type = $"{iqpex.EntityName}.{iqpex.Error}",
+                Title = iqpex.Title,
+                Detail = exception.Message,
             };
 
             var json = JsonSerializer.Serialize(problemDetails);
             await context.Response.WriteAsync(json);
         }
-    }
-
-    private async Task HandleUnexpectedExceptionAsync(HttpContext context, Exception e)
-    {
-        _logger.LogError(e, e.Message);
-
-        context.Response.ContentType = "application/json";
-        context.Response.StatusCode = (int) HttpStatusCode.InternalServerError;
-
-        ProblemDetails problem = new()
+        else
         {
-            Status = (int) HttpStatusCode.InternalServerError,
-            Type = "InternalServerError",
-            Title = "Internal server error.",
-            Detail = "A critical internal server error occurred."
-        };
+            context.Response.StatusCode = (int) HttpStatusCode.InternalServerError;
 
-        var json = JsonSerializer.Serialize(problem);
+            ProblemDetails problem = new()
+            {
+                Status = (int) HttpStatusCode.InternalServerError,
+                Type = "InternalServerError",
+                Title = "Internal server error.",
+                Detail = "A critical internal server error occurred."
+            };
 
-        await context.Response.WriteAsync(json);
+            var json = JsonSerializer.Serialize(problem);
+            await context.Response.WriteAsync(json);
+        }
     }
-
-    public static HttpStatusCode ResolveHttpStatusCode(IqpException exception)
+    
+    private static HttpStatusCode ResolveHttpStatusCode(IqpException exception)
     {
         // Make it more typed I guess. Solution 1) Move Errors to Domain. Check later if suitable (if all errors are domain based)
         return exception.Error switch
