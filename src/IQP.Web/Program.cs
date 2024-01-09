@@ -8,7 +8,9 @@ using IQP.Infrastructure.CodeRunner;
 using IQP.Infrastructure.Data;
 using IQP.Infrastructure.Services;
 using IQP.Web.Middlewares;
+using IQP.Web.Middlewares.Auth;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -123,7 +125,14 @@ builder.Services.AddSwaggerGen(o =>
             });
         });
 
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(o =>
+{
+    o.AddPolicy("AdminOnly", p => p.AddRequirements(new AdminOnlyRequirement()));
+});
+builder.Services.AddSingleton<IAuthorizationHandler, AdminOnlyHandler>();
+
+builder.Services.AddSingleton<
+    IAuthorizationMiddlewareResultHandler, CustomAuthResponsesHandler>();
 
 builder.Services.AddValidatorsFromAssemblyContaining<CreateCategoryCommandValidator>();
 

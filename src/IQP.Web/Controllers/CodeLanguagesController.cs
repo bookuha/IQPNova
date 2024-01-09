@@ -18,7 +18,7 @@ public class CodeLanguagesController : ControllerBase
         _codeLanguagesService = codeLanguagesService;
     }
 
-    [Authorize]
+    [Authorize(Policy = "AdminOnly")]
     [HttpPost]
     public async Task<ActionResult<CodeLanguageResponse>> CreateLanguage([FromBody] CreateCodeLanguageRequest request)
     {
@@ -45,7 +45,7 @@ public class CodeLanguagesController : ControllerBase
         return Ok(response);
     }
     
-    [Authorize]
+    [Authorize(Policy = "AdminOnly")]
     [HttpPut("{id}")]
     public async Task<ActionResult<CodeLanguageResponse>> UpdateLanguage(Guid id, [FromBody] UpdateCodeLanguageRequest request)
     {
@@ -56,7 +56,7 @@ public class CodeLanguagesController : ControllerBase
         return Ok(response);
     }
     
-    [Authorize]
+    [Authorize(Policy = "AdminOnly")]
     [HttpDelete("{id}")]
     public async Task<ActionResult<CodeLanguageResponse>> DeleteLanguage(Guid id)
     {

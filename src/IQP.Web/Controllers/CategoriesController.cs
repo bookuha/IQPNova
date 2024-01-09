@@ -19,7 +19,7 @@ public class CategoriesController : ControllerBase
         _categoriesService = categoriesService;
     }
 
-    [Authorize]
+    [Authorize(Policy = "AdminOnly")]
     [HttpPost]
     public async Task<ActionResult<CategoryResponse>> CreateCategory([FromBody] CreateCategoryRequest request)
     {
@@ -46,7 +46,7 @@ public class CategoriesController : ControllerBase
         return Ok(result);
     }
     
-    [Authorize]
+    [Authorize(Policy = "AdminOnly")]
     [HttpPut("{id}")]
     public async Task<ActionResult<CategoryResponse>> UpdateCategory(Guid id, [FromBody] UpdateCategoryRequest request)
     {
@@ -57,7 +57,7 @@ public class CategoriesController : ControllerBase
         return Ok(result);
     }
     
-    [Authorize]
+    [Authorize(Policy = "AdminOnly")]
     [HttpDelete("{id}")]
     public async Task<ActionResult<CategoryResponse>> DeleteCategory(Guid id)
     {
