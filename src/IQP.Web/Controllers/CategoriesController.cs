@@ -12,9 +12,9 @@ namespace IQP.Web.Controllers;
 [ApiController]
 public class CategoriesController : ControllerBase
 {
-    private readonly CategoriesService _categoriesService;
+    private readonly ICategoriesService _categoriesService;
 
-    public CategoriesController(CategoriesService categoriesService)
+    public CategoriesController(ICategoriesService categoriesService)
     {
         _categoriesService = categoriesService;
     }

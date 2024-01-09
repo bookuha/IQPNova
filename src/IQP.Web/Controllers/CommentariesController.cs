@@ -12,9 +12,9 @@ namespace IQP.Web.Controllers;
 [ApiController]
 public class CommentariesController : ControllerBase
 {
-    private readonly CommentariesService _commentariesService;
+    private readonly ICommentariesService _commentariesService;
 
-    public CommentariesController(CommentariesService commentariesService)
+    public CommentariesController(ICommentariesService commentariesService)
     {
         _commentariesService = commentariesService;
     }

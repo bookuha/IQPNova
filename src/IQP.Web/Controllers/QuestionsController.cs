@@ -12,9 +12,9 @@ namespace IQP.Web.Controllers;
 [ApiController]
 public class QuestionsController : ControllerBase
 {
-    private readonly QuestionsService _questionsService;
+    private readonly IQuestionsService _questionsService;
 
-    public QuestionsController(QuestionsService questionsService)
+    public QuestionsController(IQuestionsService questionsService)
     {
         _questionsService = questionsService;
     }
