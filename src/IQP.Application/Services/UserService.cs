@@ -118,4 +118,18 @@ public class UserService : IUserService
 
         return claims;
     }
+    
+    public async Task<bool> IsUserAdmin(Guid userId)
+    {
+        var user = await _userManager.FindByIdAsync(userId.ToString());
+
+        if (user is null)
+        {
+            throw new IqpException(
+                EntityName.User, Errors.NotFound.ToString(), "User not found",
+                "The user with such id does not exist.");
+        }
+
+        return user.IsAdmin;
+    }
 }

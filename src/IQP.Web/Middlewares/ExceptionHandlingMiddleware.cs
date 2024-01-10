@@ -1,6 +1,8 @@
 using System.Net;
+using System.Security.Authentication;
 using System.Text.Json;
 using IQP.Domain.Exceptions;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 
 namespace IQP.Web.Middlewares;
@@ -36,48 +38,59 @@ public static class HttpExceptionHandlingUtilities
     {
         context.Response.ContentType = "application/json";
 
-        if (exception is ValidationException iqpvex)
+        switch (exception)
         {
-            context.Response.StatusCode = (int) ResolveHttpStatusCode(iqpvex);
-            var validationProblemDetails = new ValidationProblemDetails(iqpvex.Errors)
+            case ValidationException iqpvex:
             {
-                Type = $"{iqpvex.EntityName}.{iqpvex.Error}",
-                Title = iqpvex.Title,
-                Status = (int) ResolveHttpStatusCode(iqpvex),
-                Detail = exception.Message
-            };
+                context.Response.StatusCode = (int) ResolveHttpStatusCode(iqpvex);
+                var validationProblemDetails = new ValidationProblemDetails(iqpvex.Errors)
+                {
+                    Type = $"{iqpvex.EntityName}.{iqpvex.Error}",
+                    Title = iqpvex.Title,
+                    Status = (int) ResolveHttpStatusCode(iqpvex),
+                    Detail = exception.Message
+                };
 
-            var json = JsonSerializer.Serialize(validationProblemDetails);
-            await context.Response.WriteAsync(json);
-        }
-        else if (exception is IqpException iqpex)
-        {
-            context.Response.StatusCode = (int) ResolveHttpStatusCode(iqpex);
-            var problemDetails = new ProblemDetails
+                var json = JsonSerializer.Serialize(validationProblemDetails);
+                await context.Response.WriteAsync(json);
+                break;
+            }
+            case IqpException iqpex:
             {
-                Status = (int) ResolveHttpStatusCode(iqpex),
-                Type = $"{iqpex.EntityName}.{iqpex.Error}",
-                Title = iqpex.Title,
-                Detail = exception.Message,
-            };
+                context.Response.StatusCode = (int) ResolveHttpStatusCode(iqpex);
+                var problemDetails = new ProblemDetails
+                {
+                    Status = (int) ResolveHttpStatusCode(iqpex),
+                    Type = $"{iqpex.EntityName}.{iqpex.Error}",
+                    Title = iqpex.Title,
+                    Detail = exception.Message,
+                };
 
-            var json = JsonSerializer.Serialize(problemDetails);
-            await context.Response.WriteAsync(json);
-        }
-        else
-        {
-            context.Response.StatusCode = (int) HttpStatusCode.InternalServerError;
-
-            ProblemDetails problem = new()
+                var json = JsonSerializer.Serialize(problemDetails);
+                await context.Response.WriteAsync(json);
+                break;
+            }
+            case AuthenticationException:
+                context.Response.StatusCode = (int) HttpStatusCode.Unauthorized;
+                // New schemes can be added in future, but for now it is JWT only.
+                context.Response.Headers.Add("WWW-Authenticate", JwtBearerDefaults.AuthenticationScheme);
+                break;
+            default:
             {
-                Status = (int) HttpStatusCode.InternalServerError,
-                Type = "InternalServerError",
-                Title = "Internal server error.",
-                Detail = "A critical internal server error occurred."
-            };
+                context.Response.StatusCode = (int) HttpStatusCode.InternalServerError;
 
-            var json = JsonSerializer.Serialize(problem);
-            await context.Response.WriteAsync(json);
+                ProblemDetails problem = new()
+                {
+                    Status = (int) HttpStatusCode.InternalServerError,
+                    Type = "InternalServerError",
+                    Title = "Internal server error.",
+                    Detail = "A critical internal server error occurred."
+                };
+
+                var json = JsonSerializer.Serialize(problem);
+                await context.Response.WriteAsync(json);
+                break;
+            }
         }
     }
     

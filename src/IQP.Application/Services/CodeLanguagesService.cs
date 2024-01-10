@@ -6,6 +6,7 @@ using IQP.Domain;
 using IQP.Domain.Entities;
 using IQP.Domain.Exceptions;
 using IQP.Infrastructure.Data;
+using IQP.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using ValidationException = IQP.Domain.Exceptions.ValidationException;
 
@@ -16,16 +17,25 @@ public class CodeLanguagesService : ICodeLanguagesService
     private readonly IqpDbContext _db;
     private readonly IValidator<CreateCodeLanguageCommand> _createCommandValidator;
     private readonly IValidator<UpdateCodeLanguageCommand> _updateCommandValidator;
+    private readonly ICurrentUserService _currentUser;
+    private readonly IUserService _userService;
     
-    public CodeLanguagesService(IqpDbContext db, IValidator<CreateCodeLanguageCommand> createCommandValidator, IValidator<UpdateCodeLanguageCommand> updateCommandValidator)
+    public CodeLanguagesService(IqpDbContext db, IValidator<CreateCodeLanguageCommand> createCommandValidator, IValidator<UpdateCodeLanguageCommand> updateCommandValidator, ICurrentUserService currentUser, IUserService userService)
     {
         _db = db;
         _createCommandValidator = createCommandValidator;
         _updateCommandValidator = updateCommandValidator;
+        _currentUser = currentUser;
+        _userService = userService;
     }
     
     public async Task<CodeLanguageResponse> CreateLanguage(CreateCodeLanguageCommand command)
     {
+        if (await _userService.IsUserAdmin(_currentUser.UserId.Value))
+        {
+            throw IqpException.NotAdmin();
+        }
+        
         var validationResult = _createCommandValidator.Validate(command);
 
         if (!validationResult.IsValid)
@@ -77,6 +87,11 @@ public class CodeLanguagesService : ICodeLanguagesService
     
     public async Task<CodeLanguageResponse> UpdateLanguage(UpdateCodeLanguageCommand command)
     {
+        if (await _userService.IsUserAdmin(_currentUser.UserId.Value))
+        {
+            throw IqpException.NotAdmin();
+        }
+
         var validationResult = _updateCommandValidator.Validate(command);
         if (!validationResult.IsValid)
         {
@@ -115,6 +130,11 @@ public class CodeLanguagesService : ICodeLanguagesService
     
     public async Task<CodeLanguageResponse> DeleteLanguage(Guid id)
     {
+        if (await _userService.IsUserAdmin(_currentUser.UserId.Value))
+        {
+            throw IqpException.NotAdmin();
+        }
+
         var language = await _db.CodeLanguages.FindAsync(id);
         if (language is null)
         {

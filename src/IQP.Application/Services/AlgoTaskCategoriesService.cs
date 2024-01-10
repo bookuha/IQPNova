@@ -5,6 +5,7 @@ using IQP.Domain;
 using IQP.Domain.Entities;
 using IQP.Domain.Exceptions;
 using IQP.Infrastructure.Data;
+using IQP.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -16,17 +17,26 @@ public class AlgoTaskCategoriesService : IAlgoTaskCategoriesService
     private readonly CreateAlgoTaskCategoryCommandValidator _createAlgoTaskCategoryCommandValidator;
     private readonly UpdateAlgoTaskCategoryCommandValidator _updateAlgoTaskCategoryCommandValidator;
     private readonly ILogger<AlgoTaskCategoriesService> _logger;
+    private readonly ICurrentUserService _currentUser;
+    private readonly IUserService _userService;
 
-    public AlgoTaskCategoriesService(IqpDbContext db, CreateAlgoTaskCategoryCommandValidator createAlgoTaskCategoryCommandValidator, UpdateAlgoTaskCategoryCommandValidator updateAlgoTaskCategoryCommandValidator, ILogger<AlgoTaskCategoriesService> logger)
+    public AlgoTaskCategoriesService(IqpDbContext db, CreateAlgoTaskCategoryCommandValidator createAlgoTaskCategoryCommandValidator, UpdateAlgoTaskCategoryCommandValidator updateAlgoTaskCategoryCommandValidator, ILogger<AlgoTaskCategoriesService> logger, ICurrentUserService currentUser, IUserService userService)
     {
         _db = db;
         _createAlgoTaskCategoryCommandValidator = createAlgoTaskCategoryCommandValidator;
         _updateAlgoTaskCategoryCommandValidator = updateAlgoTaskCategoryCommandValidator;
         _logger = logger;
+        _currentUser = currentUser;
+        _userService = userService;
     }
     
     public async Task<AlgoTaskCategoryResponse> CreateCategory(CreateAlgoTaskCategoryCommand command)
     {
+        if (await _userService.IsUserAdmin(_currentUser.UserId.Value))
+        {
+            throw IqpException.NotAdmin();
+        }
+
         if (command is null)
         {
             throw new ArgumentNullException(nameof(command));
@@ -83,6 +93,11 @@ public class AlgoTaskCategoriesService : IAlgoTaskCategoriesService
     
     public async Task<AlgoTaskCategoryResponse> UpdateCategory(UpdateAlgoTaskCategoryCommand command)
     {
+        if (await _userService.IsUserAdmin(_currentUser.UserId.Value))
+        {
+            throw IqpException.NotAdmin();
+        }
+
         var commandValidationResult = _updateAlgoTaskCategoryCommandValidator.Validate(command);
 
         if (!commandValidationResult.IsValid)
@@ -109,6 +124,11 @@ public class AlgoTaskCategoriesService : IAlgoTaskCategoriesService
     
     public async Task<AlgoTaskCategoryResponse> DeleteCategory(Guid id)
     {
+        if (await _userService.IsUserAdmin(_currentUser.UserId.Value))
+        {
+            throw IqpException.NotAdmin();
+        }
+
         var category = await _db.AlgoTaskCategories.FindAsync(id);
 
         if (category is null)
@@ -124,5 +144,4 @@ public class AlgoTaskCategoriesService : IAlgoTaskCategoriesService
 
         return category.ToResponse();
     }
-    
 }

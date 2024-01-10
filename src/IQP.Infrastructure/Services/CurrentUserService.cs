@@ -1,3 +1,4 @@
+using System.Security.Authentication;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 
@@ -16,7 +17,7 @@ public class CurrentUserService : ICurrentUserService
 
     public bool IsAuthenticated => GetUser().Identity?.IsAuthenticated ?? false;
     public Guid? UserId => _currentUserId ??= Guid.Parse(GetUser().FindFirst(ClaimTypes.NameIdentifier)?.Value 
-                                                         ?? throw new InvalidOperationException()); //todo:
+                                                         ?? throw new AuthenticationException()); //todo:
     
 
     public bool IsInRole(string role) => GetUser().IsInRole(role);

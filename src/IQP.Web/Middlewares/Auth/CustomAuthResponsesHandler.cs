@@ -22,11 +22,7 @@ public class CustomAuthResponsesHandler : IAuthorizationMiddlewareResultHandler
             && authorizeResult.AuthorizationFailure!.FailedRequirements
                 .OfType<AdminOnlyRequirement>().Any())
         {
-            var exception = new IqpException(
-                EntityName.User, Errors.Restricted.ToString(), "Forbidden",
-                "You are not allowed to access this resource."); // TODO: Maybe any better naming/code?
-            
-            await HttpExceptionHandlingUtilities.WriteExceptionToContextAsync(context, exception);
+            await HttpExceptionHandlingUtilities.WriteExceptionToContextAsync(context, IqpException.NotAdmin());
             return;
         }
 
