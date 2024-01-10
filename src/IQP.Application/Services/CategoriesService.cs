@@ -34,7 +34,7 @@ public class CategoriesService : ICategoriesService
 
     public async Task<CategoryResponse> CreateCategory(CreateCategoryCommand command)
     {
-        if (await _userService.IsUserAdmin(_currentUser.UserId.Value))
+        if (!await _userService.IsUserAdmin(_currentUser.UserId.Value))
         {
             throw IqpException.NotAdmin();
         }
@@ -98,7 +98,7 @@ public class CategoriesService : ICategoriesService
 
     public async Task<CategoryResponse> UpdateCategory(UpdateCategoryCommand command)
     {
-        if (await _userService.IsUserAdmin(_currentUser.UserId.Value))
+        if (!await _userService.IsUserAdmin(_currentUser.UserId.Value))
         {
             throw IqpException.NotAdmin();
         }
@@ -132,7 +132,7 @@ public class CategoriesService : ICategoriesService
 
     public async Task<CategoryResponse> DeleteCategory(Guid id)
     {
-        if (await _userService.IsUserAdmin(_currentUser.UserId.Value))
+        if (!await _userService.IsUserAdmin(_currentUser.UserId.Value))
         {
             throw IqpException.NotAdmin();
         }

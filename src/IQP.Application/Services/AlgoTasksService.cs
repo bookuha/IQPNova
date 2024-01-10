@@ -63,7 +63,7 @@ public class AlgoTasksService : IAlgoTasksService
     
     public async Task<AlgoTaskResponse> CreateAlgoTask(CreateAlgoTaskCommand command)
     {
-        if (await _userService.IsUserAdmin(_currentUser.UserId.Value))
+        if (!await _userService.IsUserAdmin(_currentUser.UserId.Value))
         {
             throw IqpException.NotAdmin();
         }
@@ -246,7 +246,7 @@ public class AlgoTasksService : IAlgoTasksService
     
     public async Task<AlgoTaskResponse> UpdateAlgoTask(UpdateAlgoTaskCommand command)
     {
-        if (await _userService.IsUserAdmin(_currentUser.UserId.Value))
+        if (!await _userService.IsUserAdmin(_currentUser.UserId.Value))
         {
             throw IqpException.NotAdmin();
         }

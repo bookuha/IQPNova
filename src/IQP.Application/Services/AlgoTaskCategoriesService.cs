@@ -32,7 +32,7 @@ public class AlgoTaskCategoriesService : IAlgoTaskCategoriesService
     
     public async Task<AlgoTaskCategoryResponse> CreateCategory(CreateAlgoTaskCategoryCommand command)
     {
-        if (await _userService.IsUserAdmin(_currentUser.UserId.Value))
+        if (!await _userService.IsUserAdmin(_currentUser.UserId.Value))
         {
             throw IqpException.NotAdmin();
         }
@@ -93,7 +93,7 @@ public class AlgoTaskCategoriesService : IAlgoTaskCategoriesService
     
     public async Task<AlgoTaskCategoryResponse> UpdateCategory(UpdateAlgoTaskCategoryCommand command)
     {
-        if (await _userService.IsUserAdmin(_currentUser.UserId.Value))
+        if (!await _userService.IsUserAdmin(_currentUser.UserId.Value))
         {
             throw IqpException.NotAdmin();
         }
@@ -124,7 +124,7 @@ public class AlgoTaskCategoriesService : IAlgoTaskCategoriesService
     
     public async Task<AlgoTaskCategoryResponse> DeleteCategory(Guid id)
     {
-        if (await _userService.IsUserAdmin(_currentUser.UserId.Value))
+        if (!await _userService.IsUserAdmin(_currentUser.UserId.Value))
         {
             throw IqpException.NotAdmin();
         }

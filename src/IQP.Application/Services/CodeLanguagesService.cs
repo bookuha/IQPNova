@@ -31,7 +31,7 @@ public class CodeLanguagesService : ICodeLanguagesService
     
     public async Task<CodeLanguageResponse> CreateLanguage(CreateCodeLanguageCommand command)
     {
-        if (await _userService.IsUserAdmin(_currentUser.UserId.Value))
+        if (!await _userService.IsUserAdmin(_currentUser.UserId.Value))
         {
             throw IqpException.NotAdmin();
         }
@@ -87,7 +87,7 @@ public class CodeLanguagesService : ICodeLanguagesService
     
     public async Task<CodeLanguageResponse> UpdateLanguage(UpdateCodeLanguageCommand command)
     {
-        if (await _userService.IsUserAdmin(_currentUser.UserId.Value))
+        if (!await _userService.IsUserAdmin(_currentUser.UserId.Value))
         {
             throw IqpException.NotAdmin();
         }
@@ -130,7 +130,7 @@ public class CodeLanguagesService : ICodeLanguagesService
     
     public async Task<CodeLanguageResponse> DeleteLanguage(Guid id)
     {
-        if (await _userService.IsUserAdmin(_currentUser.UserId.Value))
+        if (!await _userService.IsUserAdmin(_currentUser.UserId.Value))
         {
             throw IqpException.NotAdmin();
         }
