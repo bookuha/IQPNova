@@ -9,4 +9,5 @@ public interface IUserService
     public Task<UserResponse> Register(CreateUserCommand command);
     public Task<UserResponse> Login(string nickname, string password);
     public Task<IEnumerable<Claim>?> GetClaims(Guid userId);
+    public Task<bool> IsUserAdmin(Guid userId);
 }

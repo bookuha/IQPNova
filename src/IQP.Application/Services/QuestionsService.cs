@@ -221,11 +221,6 @@ public class QuestionsService : IQuestionsService
         }
         
         var currentUser = await _db.Users.FindAsync(_currentUser.UserId);
-        if (currentUser is null)
-        {
-            throw new IqpException(
-                EntityName.Question,Errors.Critical.ToString(), "Critical", "Critical authorization error has just occured.");
-        }
 
         var isLikedAlready = question.LikedBy.Any(u=>u.Id == _currentUser.UserId);
         

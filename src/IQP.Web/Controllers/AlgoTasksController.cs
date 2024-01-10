@@ -14,14 +14,13 @@ namespace IQP.Web.Controllers;
 public class AlgoTasksController : ControllerBase
 {
     private readonly IAlgoTasksService _algoTasksService;
-   
-
+    
     public AlgoTasksController(IAlgoTasksService algoTasksService)
     {
         _algoTasksService = algoTasksService;
     }
     
-    [Authorize]
+    [Authorize(Policy = "AdminOnly")]
     [HttpPost]
     public async Task<ActionResult<AlgoTaskResponse>> CreateAlgoTask([FromBody] CreateAlgoTaskRequest request)
     {
@@ -65,6 +64,7 @@ public class AlgoTasksController : ControllerBase
         return Ok(result);
     }
     
+    [Authorize]
     [HttpPost("{algoTaskId:guid}/submit")]
     public async Task<ActionResult<TestRun>> SubmitAlgoTaskSolution(Guid algoTaskId, [FromBody] SubmitCodeRequest request)
     {
@@ -86,6 +86,7 @@ public class AlgoTasksController : ControllerBase
         return Ok(result);
     }
     
+    [Authorize]
     [HttpPost("/test")]
     public async Task<ActionResult<TestRun>> RunTestsOnCode([FromBody] RunTestsOnCodeRequest request)
     {
@@ -112,7 +113,7 @@ public class AlgoTasksController : ControllerBase
         return Ok(result);
     }
     
-    [Authorize]
+    [Authorize(Policy = "AdminOnly")]
     [HttpPut("{algoTaskId:guid}")]
     public async Task<ActionResult<AlgoTaskResponse>> UpdateAlgoTask(Guid algoTaskId, [FromBody] UpdateAlgoTaskRequest request)
     {

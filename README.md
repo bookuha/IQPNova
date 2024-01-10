@@ -9,7 +9,7 @@ IQP (*Interview Questions Portal/Practice*) is a web application that allows you
 
 ### What is done
 
-- **User.** Registration, authentication and authorization (JWT, but without refresh tokens)
+- **User.** Registration, authentication and authorization (two layered) (JWT, but without refresh tokens), administrators, etc.
 - **Questions.** CRUD, likes, comments, categories, special BL, etc.
 - **Coding Problems.** CRUD, submission, test submission, categories, just running arbitrary code (for FE purposes), adding new languages, special BL, etc.
 

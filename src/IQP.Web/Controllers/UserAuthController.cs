@@ -55,7 +55,7 @@ public class UserAuthController : ControllerBase
         });
     }
     
-    [Authorize]
+    [Authorize(Policy = "AdminOnly")]
     [HttpGet]
     [Route("test")]
     [ProducesResponseType(typeof(string), 200)]

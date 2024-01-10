@@ -6,6 +6,7 @@ using IQP.Domain;
 using IQP.Domain.Entities;
 using IQP.Domain.Exceptions;
 using IQP.Infrastructure.Data;
+using IQP.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using ValidationException = IQP.Domain.Exceptions.ValidationException;
@@ -15,20 +16,29 @@ namespace IQP.Application.Services;
 public class CategoriesService : ICategoriesService
 {
     private readonly IqpDbContext _db;
-    private readonly CreateCategoryCommandValidator _createCategoryCommandValidator; // Naming is not consistent
+    private readonly CreateCategoryCommandValidator _createCategoryCommandValidator;
     private readonly UpdateCategoryCommandValidator _updateCategoryCommandValidator;
     private readonly ILogger<CategoriesService> _logger;
+    private readonly ICurrentUserService _currentUser;
+    private readonly IUserService _userService;
 
-    public CategoriesService(IqpDbContext db, CreateCategoryCommandValidator createCommandValidator, UpdateCategoryCommandValidator updateCategoryCommandValidator, ILogger<CategoriesService> logger)
+    public CategoriesService(IqpDbContext db, CreateCategoryCommandValidator createCommandValidator, UpdateCategoryCommandValidator updateCategoryCommandValidator, ILogger<CategoriesService> logger, ICurrentUserService currentUser, IUserService userService)
     {
         _db = db;
         _createCategoryCommandValidator = createCommandValidator;
         _updateCategoryCommandValidator = updateCategoryCommandValidator;
         _logger = logger;
+        _currentUser = currentUser;
+        _userService = userService;
     }
 
     public async Task<CategoryResponse> CreateCategory(CreateCategoryCommand command)
     {
+        if (!await _userService.IsUserAdmin(_currentUser.UserId.Value))
+        {
+            throw IqpException.NotAdmin();
+        }
+        
         if (command is null)
         {
             throw new ArgumentNullException(nameof(command));
@@ -88,6 +98,11 @@ public class CategoriesService : ICategoriesService
 
     public async Task<CategoryResponse> UpdateCategory(UpdateCategoryCommand command)
     {
+        if (!await _userService.IsUserAdmin(_currentUser.UserId.Value))
+        {
+            throw IqpException.NotAdmin();
+        }
+        
         var commandValidationResult = _updateCategoryCommandValidator.Validate(command);
         
         if (!commandValidationResult.IsValid)
@@ -117,6 +132,11 @@ public class CategoriesService : ICategoriesService
 
     public async Task<CategoryResponse> DeleteCategory(Guid id)
     {
+        if (!await _userService.IsUserAdmin(_currentUser.UserId.Value))
+        {
+            throw IqpException.NotAdmin();
+        }
+
         var category = await _db.Categories.FindAsync(id);
         
         if (category is null)

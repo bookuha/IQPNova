@@ -17,7 +17,7 @@ public class AlgoTaskCategoriesController : ControllerBase
         _algoTaskCategoriesService = algoTaskCategoriesService;
     }
     
-    [Authorize]
+    [Authorize(Policy = "AdminOnly")]
     [HttpPost]
     public async Task<ActionResult<AlgoTaskCategoryResponse>> CreateCategory([FromBody] CreateAlgoTaskCategoryRequest request)
     {
@@ -44,7 +44,7 @@ public class AlgoTaskCategoriesController : ControllerBase
         return Ok(response);
     }
     
-    [Authorize]
+    [Authorize(Policy = "AdminOnly")]
     [HttpPut("{id}")]
     public async Task<ActionResult<AlgoTaskCategoryResponse>> UpdateCategory(Guid id, [FromBody] UpdateAlgoTaskCategoryRequest request)
     {
@@ -55,7 +55,7 @@ public class AlgoTaskCategoriesController : ControllerBase
         return Ok(response);
     }
     
-    [Authorize]
+    [Authorize(Policy = "AdminOnly")]
     [HttpDelete("{id}")]
     public async Task<ActionResult> DeleteCategory(Guid id)
     {

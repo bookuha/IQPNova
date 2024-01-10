@@ -1,6 +1,8 @@
 using System.Net;
+using System.Security.Authentication;
 using System.Text.Json;
 using IQP.Domain.Exceptions;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 
 namespace IQP.Web.Middlewares;
@@ -22,72 +24,77 @@ public class ExceptionHandlingMiddleware
         {
             await _next(context);
         }
-        catch (IqpException ex)
-        {
-            await HandleExpectedExceptionAsync(context, ex);
-        }
         catch (Exception ex)
         {
-            await HandleUnexpectedExceptionAsync(context, ex);
+            _logger.LogError(ex, ex.Message);
+            await HttpExceptionHandlingUtilities.WriteExceptionToContextAsync(context, ex);
         }
     }
+}
 
-    private async Task HandleExpectedExceptionAsync(HttpContext context, IqpException e)
+public static class HttpExceptionHandlingUtilities
+{
+    public static async Task WriteExceptionToContextAsync(HttpContext context, Exception exception)
     {
-        _logger.LogError(e, e.Message);
-
         context.Response.ContentType = "application/json";
-        context.Response.StatusCode = (int) ResolveHttpStatusCode(e);
 
-        if (e is ValidationException ve)
+        switch (exception)
         {
-            var validationProblemDetails = new ValidationProblemDetails(ve.Errors)
+            case ValidationException iqpvex:
             {
-                Type = $"{e.EntityName}.{e.Error}",
-                Title = e.Title,
-                Status = (int) ResolveHttpStatusCode(e),
-                Detail = e.Message
-            };
+                context.Response.StatusCode = (int) ResolveHttpStatusCode(iqpvex);
+                var validationProblemDetails = new ValidationProblemDetails(iqpvex.Errors)
+                {
+                    Type = $"{iqpvex.EntityName}.{iqpvex.Error}",
+                    Title = iqpvex.Title,
+                    Status = (int) ResolveHttpStatusCode(iqpvex),
+                    Detail = exception.Message
+                };
 
-            var json = JsonSerializer.Serialize(validationProblemDetails);
-            await context.Response.WriteAsync(json);
-        }
-        else
-        {
-            var problemDetails = new ProblemDetails
+                var json = JsonSerializer.Serialize(validationProblemDetails);
+                await context.Response.WriteAsync(json);
+                break;
+            }
+            case IqpException iqpex:
             {
-                Status = (int) ResolveHttpStatusCode(e),
-                Type = $"{e.EntityName}.{e.Error}",
-                Title = e.Title,
-                Detail = e.Message,
-            };
+                context.Response.StatusCode = (int) ResolveHttpStatusCode(iqpex);
+                var problemDetails = new ProblemDetails
+                {
+                    Status = (int) ResolveHttpStatusCode(iqpex),
+                    Type = $"{iqpex.EntityName}.{iqpex.Error}",
+                    Title = iqpex.Title,
+                    Detail = exception.Message,
+                };
 
-            var json = JsonSerializer.Serialize(problemDetails);
-            await context.Response.WriteAsync(json);
+                var json = JsonSerializer.Serialize(problemDetails);
+                await context.Response.WriteAsync(json);
+                break;
+            }
+            case AuthenticationException:
+                context.Response.StatusCode = (int) HttpStatusCode.Unauthorized;
+                // New schemes can be added in future, but for now it is JWT only.
+                context.Response.Headers.Add("WWW-Authenticate", JwtBearerDefaults.AuthenticationScheme);
+                break;
+            default:
+            {
+                context.Response.StatusCode = (int) HttpStatusCode.InternalServerError;
+
+                ProblemDetails problem = new()
+                {
+                    Status = (int) HttpStatusCode.InternalServerError,
+                    Type = "InternalServerError",
+                    Title = "Internal server error.",
+                    Detail = "A critical internal server error occurred."
+                };
+
+                var json = JsonSerializer.Serialize(problem);
+                await context.Response.WriteAsync(json);
+                break;
+            }
         }
     }
-
-    private async Task HandleUnexpectedExceptionAsync(HttpContext context, Exception e)
-    {
-        _logger.LogError(e, e.Message);
-
-        context.Response.ContentType = "application/json";
-        context.Response.StatusCode = (int) HttpStatusCode.InternalServerError;
-
-        ProblemDetails problem = new()
-        {
-            Status = (int) HttpStatusCode.InternalServerError,
-            Type = "InternalServerError",
-            Title = "Internal server error.",
-            Detail = "A critical internal server error occurred."
-        };
-
-        var json = JsonSerializer.Serialize(problem);
-
-        await context.Response.WriteAsync(json);
-    }
-
-    public static HttpStatusCode ResolveHttpStatusCode(IqpException exception)
+    
+    private static HttpStatusCode ResolveHttpStatusCode(IqpException exception)
     {
         // Make it more typed I guess. Solution 1) Move Errors to Domain. Check later if suitable (if all errors are domain based)
         return exception.Error switch

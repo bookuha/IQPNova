@@ -25,6 +25,7 @@ public class AlgoTasksService : IAlgoTasksService
     private readonly IValidator<UpdateAlgoTaskCommand> _updateAlgoTaskCommandValidator;
     private readonly IValidator<AddNewLanguageToAlgoTaskCommand> _addNewLanguageToAlgoTaskCommandValidator;
     private readonly ILogger<AlgoTasksService> _logger;
+    private readonly IUserService _userService;
     
 
     public AlgoTasksService(
@@ -36,7 +37,8 @@ public class AlgoTasksService : IAlgoTasksService
         IValidator<CreateAlgoTaskCommand> createAlgoTaskCommandValidator,
         IValidator<UpdateAlgoTaskCommand> updateAlgoTaskCommandValidator,
         IValidator<AddNewLanguageToAlgoTaskCommand> addNewLanguageToAlgoTaskCommandValidator,
-        ILogger<AlgoTasksService> logger)
+        ILogger<AlgoTasksService> logger,
+        IUserService userService)
     {
         _db = db;
         _codeTestRunner = codeTestRunner;
@@ -47,6 +49,7 @@ public class AlgoTasksService : IAlgoTasksService
         _updateAlgoTaskCommandValidator = updateAlgoTaskCommandValidator;
         _addNewLanguageToAlgoTaskCommandValidator = addNewLanguageToAlgoTaskCommandValidator;
         _logger = logger;
+        _userService = userService;
     }
 
     private static IEnumerable<CodeLanguage> GetTaskSupportedLanguages(AlgoTask algoTask) => algoTask.CodeSnippets.Select(t => t.Language);
@@ -60,6 +63,12 @@ public class AlgoTasksService : IAlgoTasksService
     
     public async Task<AlgoTaskResponse> CreateAlgoTask(CreateAlgoTaskCommand command)
     {
+        if (!await _userService.IsUserAdmin(_currentUser.UserId.Value))
+        {
+            throw IqpException.NotAdmin();
+        }
+
+        
         var commandValidationResult = _createAlgoTaskCommandValidator.Validate(command);
         
         if (!commandValidationResult.IsValid)
@@ -237,6 +246,11 @@ public class AlgoTasksService : IAlgoTasksService
     
     public async Task<AlgoTaskResponse> UpdateAlgoTask(UpdateAlgoTaskCommand command)
     {
+        if (!await _userService.IsUserAdmin(_currentUser.UserId.Value))
+        {
+            throw IqpException.NotAdmin();
+        }
+        
         var algoTask = await _db.AlgoTasks
             .Include(t=>t.AlgoCategory)
             .Include(t=>t.CodeSnippets)

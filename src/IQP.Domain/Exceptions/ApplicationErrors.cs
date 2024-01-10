@@ -7,6 +7,5 @@ public enum Errors
     AlreadyExists,
     NotFound,
     Restricted,
-    Critical,
     WrongFlow // Means there is a problem with business logic flow. Like user tries to like a question twice.
 }
