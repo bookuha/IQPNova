@@ -1,3 +1,5 @@
+using IQP.Application;
+
 namespace IQP.Domain.Exceptions;
 
 public class IqpException : Exception
@@ -23,6 +25,6 @@ public class IqpException : Exception
     
     public static IqpException NotAdmin()
     {
-        return new IqpException(Domain.EntityName.User, "Restricted" , "Forbidden", "You are not allowed to access this resource.");
+        return new IqpException(Domain.EntityName.User, Errors.Restricted.ToString() , "Forbidden", "You are not allowed to access this resource.");
     }
 }
