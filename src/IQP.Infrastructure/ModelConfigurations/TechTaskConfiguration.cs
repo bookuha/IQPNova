@@ -17,12 +17,12 @@ public class TechTaskConfiguration : IEntityTypeConfiguration<TechTask>
 
         builder
             .Property<string>(t => t.Title)
-            .HasMaxLength(30)
+            .HasMaxLength(100)
             .IsRequired();
         
         builder
             .Property<string>(t => t.Description)
-            .HasMaxLength(320)
+            .HasMaxLength(750)
             .IsRequired();
 
         builder

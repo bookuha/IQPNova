@@ -14,7 +14,7 @@ public class AlgoTaskConfiguration : IEntityTypeConfiguration<AlgoTask>
 
         builder
             .Property<string>(t => t.Title)
-            .HasMaxLength(50)
+            .HasMaxLength(100)
             .IsRequired();
 
         builder

@@ -87,7 +87,7 @@ public class AlgoTasksController : ControllerBase
     }
     
     [Authorize]
-    [HttpPost("/test")]
+    [HttpPost("test")]
     public async Task<ActionResult<TestRun>> RunTestsOnCode([FromBody] RunTestsOnCodeRequest request)
     {
         var command = new RunTestsOnCodeCommand{ LanguageId = request.LanguageId, Code = request.Code, Tests = request.Tests };

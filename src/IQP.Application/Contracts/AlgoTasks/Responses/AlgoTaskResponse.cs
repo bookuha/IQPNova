@@ -19,7 +19,7 @@ public class AlgoTaskResponse
 
 public class SampleCodeDto
 {
-    public required CodeLanguage Language { get; set; }
+    public required CodeLanguageResponse Language { get; set; }
     public required string SampleCode { get; set; }
 }
 
@@ -42,7 +42,7 @@ public static partial class AlgoTaskMappingExtensions
             SupportedLanguages = supportedLanguages.Select(cl=> cl.ToResponse()),
             CodeSamples = codeSnippets.Select(cs=> new SampleCodeDto
             {
-                Language = cs.Language,
+                Language = cs.Language.ToResponse(),
                 SampleCode = cs.SampleCode
             }),
             IsPassed = isPassed

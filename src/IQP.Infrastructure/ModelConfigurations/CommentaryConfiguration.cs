@@ -17,7 +17,7 @@ public class CommentaryConfiguration : IEntityTypeConfiguration<Commentary>
 
         builder
             .Property<string>(c => c.Content)
-            .HasMaxLength(300)
+            .HasMaxLength(500)
             .IsRequired();
 
         builder
@@ -27,7 +27,8 @@ public class CommentaryConfiguration : IEntityTypeConfiguration<Commentary>
         
         builder
             .HasMany(c => c.LikedBy)
-            .WithMany(u => u.LikedCommentaries);
+            .WithMany(u => u.LikedCommentaries)
+            .UsingEntity("UsersLikedCommentaries");
 
         builder
             .HasOne<Question>(c => c.Question)

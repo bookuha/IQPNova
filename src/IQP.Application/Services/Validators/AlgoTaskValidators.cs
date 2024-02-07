@@ -41,8 +41,8 @@ public class CreateAlgoTaskCommandValidator : AbstractValidator<CreateAlgoTaskCo
 {
     public CreateAlgoTaskCommandValidator()
     {
-        RuleFor(c => c.Title).NotEmpty().Length(4, 30);
-        RuleFor(c => c.Description).NotEmpty().Length(4, 600);
+        RuleFor(c => c.Title).NotEmpty().Length(4, 100);
+        RuleFor(c => c.Description).NotEmpty().Length(4, 750);
         RuleFor(c => c.AlgoCategoryId).NotEmpty();
         RuleFor(c => c.InitialCodeSnippet).NotNull().SetValidator(new CodeSnippetValidator());
     }
@@ -52,8 +52,8 @@ public class UpdateAlgoTaskCommandValidator : AbstractValidator<UpdateAlgoTaskCo
 {
     public UpdateAlgoTaskCommandValidator()
     {
-        RuleFor(c => c.Title).NotEmpty().Length(4, 30);
-        RuleFor(c => c.Description).NotEmpty().Length(4, 600);
+        RuleFor(c => c.Title).NotEmpty().Length(4, 100);
+        RuleFor(c => c.Description).NotEmpty().Length(4, 750);
         RuleFor(c => c.AlgoCategoryId).NotEmpty();
     }
 }

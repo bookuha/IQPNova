@@ -7,8 +7,8 @@ public class CreateQuestionCommandValidator : AbstractValidator<CreateQuestionCo
 {
     public CreateQuestionCommandValidator()
     {
-        RuleFor(c => c.Title).NotEmpty().Length(10, 30);
-        RuleFor(c => c.Description).NotEmpty().Length(20, 120);
+        RuleFor(c => c.Title).NotEmpty().Length(10, 100);
+        RuleFor(c => c.Description).NotEmpty().Length(20, 600);
         RuleFor(c => c.CategoryId).NotEmpty();
     }
 }
@@ -17,8 +17,8 @@ public class UpdateQuestionCommandValidator : AbstractValidator<UpdateQuestionCo
 {
     public UpdateQuestionCommandValidator()
     {
-        RuleFor(c => c.Title).NotEmpty().Length(10, 30);
-        RuleFor(c => c.Description).NotEmpty().Length(20, 120);
+        RuleFor(c => c.Title).NotEmpty().Length(10, 100);
+        RuleFor(c => c.Description).NotEmpty().Length(20, 600);
         RuleFor(c => c.CategoryId).NotEmpty();
     }
 }

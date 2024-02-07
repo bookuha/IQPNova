@@ -23,6 +23,9 @@ public class IqpDbContext : IdentityDbContext<User, IdentityRole<Guid>, Guid>
     {
         base.OnModelCreating(modelBuilder);
 
+        // Changes AspNetUsers to simply Users
+        modelBuilder.Entity<User>().ToTable("Users");
+        
         modelBuilder.ApplyConfiguration(new QuestionConfiguration());
         modelBuilder.ApplyConfiguration(new CategoryConfiguration());
         modelBuilder.ApplyConfiguration(new CommentaryConfiguration());
