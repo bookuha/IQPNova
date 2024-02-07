@@ -17,12 +17,12 @@ public class QuestionConfiguration : IEntityTypeConfiguration<Question>
 
         builder
             .Property<string>(q => q.Title)
-            .HasMaxLength(30)
+            .HasMaxLength(100)
             .IsRequired();
 
         builder
             .Property<string>(q => q.Description)
-            .HasMaxLength(120)
+            .HasMaxLength(600)
             .IsRequired();
 
         builder
@@ -39,7 +39,8 @@ public class QuestionConfiguration : IEntityTypeConfiguration<Question>
 
         builder
             .HasMany(q => q.LikedBy)
-            .WithMany(u => u.LikedQuestions);
+            .WithMany(u => u.LikedQuestions)
+            .UsingEntity("UsersLikedQuestions");
 
         builder
             .HasMany<Commentary>(q => q.Commentaries)

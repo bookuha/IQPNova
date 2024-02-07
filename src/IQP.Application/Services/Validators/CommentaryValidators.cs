@@ -8,7 +8,7 @@ public class CreateCommentaryCommandValidator : AbstractValidator<CreateCommenta
     public CreateCommentaryCommandValidator()
     {
         RuleFor(c=>c.QuestionId).NotEmpty();
-        RuleFor(c => c.Content).MaximumLength(300);
+        RuleFor(c => c.Content).MaximumLength(500);
     }
 }
 
@@ -17,6 +17,6 @@ public class UpdateCommentaryCommandValidator : AbstractValidator<UpdateCommenta
     public UpdateCommentaryCommandValidator()
     {
         RuleFor(c=>c.Id).NotEmpty();
-        RuleFor(c => c.Content).MaximumLength(300);
+        RuleFor(c => c.Content).MaximumLength(500);
     }
 }
