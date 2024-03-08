@@ -102,6 +102,7 @@ public class CommentariesService : ICommentariesService
         var query = _db.Commentaries
             .Where(c => c.QuestionId == questionId)
             .Include(c => c.Replies)
+            .ThenInclude(r => r.CreatedBy)
             .Include(c => c.LikedBy)
             .Include(c => c.CreatedBy)
             .Where(c => c.ReplyTo == null);
