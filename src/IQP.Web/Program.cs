@@ -48,10 +48,15 @@ builder.Services.AddCors(options =>
                 .AllowAnyHeader()
                 .AllowAnyMethod()
                 .AllowCredentials());
-    
     options.AddPolicy(name: "AllowNgrok",
         policyBuilder =>
             policyBuilder.SetIsOriginAllowed(origin => new Uri(origin).Host == builder.Configuration["NgrokUrlHost"])
+                .AllowAnyHeader()
+                .AllowAnyMethod()   
+                .AllowCredentials());
+    options.AddPolicy(name: "AllowFrontend",
+        policyBuilder =>
+            policyBuilder.SetIsOriginAllowed(origin => new Uri(origin).Host == builder.Configuration["FrontendUrlHost"])
                 .AllowAnyHeader()
                 .AllowAnyMethod()   
                 .AllowCredentials());
@@ -70,6 +75,7 @@ app.UseHttpsRedirection();
 
 app.UseCors("AllowLocalhost");
 app.UseCors("AllowNgrok");
+app.UseCors("AllowFrontend");
 
 app.UseAuthorization();
 
