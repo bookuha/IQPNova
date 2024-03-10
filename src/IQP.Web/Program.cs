@@ -43,10 +43,17 @@ builder.Services.AddSwaggerGen(builder.Configuration);
 builder.Services.AddCors(options =>
 {
     options.AddPolicy(name: "AllowLocalhost",
-        builder =>
-            builder.SetIsOriginAllowed(origin => new Uri(origin).Host == "localhost")
+        policyBuilder =>
+            policyBuilder.SetIsOriginAllowed(origin => new Uri(origin).Host == "localhost")
                 .AllowAnyHeader()
                 .AllowAnyMethod()
+                .AllowCredentials());
+    
+    options.AddPolicy(name: "AllowNgrok",
+        policyBuilder =>
+            policyBuilder.SetIsOriginAllowed(origin => new Uri(origin).Host == builder.Configuration["NgrokUrlHost"])
+                .AllowAnyHeader()
+                .AllowAnyMethod()   
                 .AllowCredentials());
 });
 
@@ -62,6 +69,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseCors("AllowLocalhost");
+app.UseCors("AllowNgrok");
 
 app.UseAuthorization();
 
