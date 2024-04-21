@@ -24,8 +24,8 @@ Frontend service will be added to the compose soon.
 
 More documentation is coming soon. For now, you can contact me in Telegram: [@sharpenjoyer](https://t.me/sharpenjoyer) or GitHub issues.
 
-I am planning to add more documentation on Code Running process specifically. Also, you may want to check TODO.md.
+I am planning to add more documentation on Code Running process specifically.
 
 ### Thanks
 
-Thanks to Exercism for sharing materials on how to run code submissions! At the moment the code running process is based entirely on their Docker code runners.
+Thanks to Exercism for sharing materials on how to run code submissions!
