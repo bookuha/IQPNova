@@ -8,6 +8,7 @@
 
     <ItemGroup>
       <PackageReference Include="CliWrap" Version="3.6.4" />
+      <PackageReference Include="Docker.DotNet" Version="3.125.15" />
       <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.0" />
       <PackageReference Include="Microsoft.Extensions.Options" Version="7.0.0" />
     </ItemGroup>

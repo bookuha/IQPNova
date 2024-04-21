@@ -6,10 +6,10 @@ public static partial class ServiceCollectionExtensions
 {
     public static IServiceCollection AddCodeExecutionServices(this IServiceCollection services, IConfiguration config)
     {
-        services.AddTransient<ITestRunner, CodeFileExecutor>();
+        services.AddTransient<ITestRunner, DockerTestRunner>();
         services.AddTransient<ISlugToExecutorCodeLanguageConverter, SlugToExecutorCodeLanguageConverter>();
-        services.AddOptions<CodeFileExecutorOptions>()
-            .Bind(config.GetSection(CodeFileExecutorOptions.CodeFileExecutor));
+        services.AddOptions<DockerTestRunnerOptions>()
+            .Bind(config.GetSection(DockerTestRunnerOptions.TestRunner));
         
         return services;
     }

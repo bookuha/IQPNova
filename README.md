@@ -15,14 +15,10 @@ IQP (*Interview Questions Portal/Practice*) is a web application that allows you
 
 ### Installation
 
-There is no docker support yet, so you need to have your own Postgres instance running.
-Also, you need to have Docker installed on your machine for running code submissions.
-
-1. Clone the repo
-2. Make sure you have Postgres & Docker running
-3. Set up appsettings.json (database connection string)
-4. Update database (e.g. `dotnet ef database update`)
-5. Enjoy!
+You can run the project with Docker. Just run `docker compose up` in the root directory.
+Migrations are applied automatically.
+At the moment, only Docker is supported, but soon local running will be available again. 
+Frontend service will be added to the compose soon.
 
 ### Documentation
 

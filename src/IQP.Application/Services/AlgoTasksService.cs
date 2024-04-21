@@ -1,7 +1,6 @@
 ﻿using FluentValidation;
 using IQP.Application.Contracts.AlgoTasks.Commands;
 using IQP.Application.Contracts.AlgoTasks.Responses;
-using IQP.Application.Services.Validators;
 using IQP.Domain;
 using IQP.Domain.Entities;
 using IQP.Domain.Exceptions;
@@ -56,7 +55,7 @@ public class AlgoTasksService : IAlgoTasksService
 
     private async Task<bool> ValidateAlgoTaskIsPassable(string initialSolutionCode, string testsCode, CodeLanguage language)
     {
-        var result = await _codeTestRunner.ExecuteTestsOnCode(initialSolutionCode, testsCode, language.Slug, Guid.NewGuid().ToString());
+        var result = await _codeTestRunner.RunTestsOnCode(initialSolutionCode, testsCode, language.Slug, Guid.NewGuid().ToString());
         
         return result.Status is TestStatus.Pass;
     }
@@ -310,7 +309,7 @@ public class AlgoTasksService : IAlgoTasksService
         }
         
         var result = await _codeTestRunner
-            .ExecuteTestsOnCode(
+            .RunTestsOnCode(
                 command.Code,
                 command.Tests,
                 language.Slug,
@@ -352,7 +351,7 @@ public class AlgoTasksService : IAlgoTasksService
         _logger.LogInformation("Running tests on code. Task: {task}, Language: {language}", algoTask.Id, specifiedLanguageSnippet.Language.Name);
         
         var result = await _codeTestRunner
-            .ExecuteTestsOnCode(
+            .RunTestsOnCode(
                 submissionCommand.Code,
                 specifiedLanguageSnippet.TestsCode,
                 specifiedLanguageSnippet.Language.Slug,
@@ -397,7 +396,7 @@ public class AlgoTasksService : IAlgoTasksService
         _logger.LogInformation("Running tests on code. Task: {task}, Language: {language}, User: {username}", algoTask.Id, specifiedLanguageSnippet.Language.Name, user.UserName);
         
         var result = await _codeTestRunner
-            .ExecuteTestsOnCode(
+            .RunTestsOnCode(
                 submissionCommand.Code,
                 specifiedLanguageSnippet.TestsCode,
                 specifiedLanguageSnippet.Language.Slug,

@@ -4,17 +4,24 @@ EXPOSE 80
 EXPOSE 443
 
 FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
+ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["IQP/IQP.csproj", "IQP/"]
-RUN dotnet restore "IQP/IQP.csproj"
+COPY ["src/IQP.Web/IQP.Web.csproj", "src/IQP.Web/"]
+COPY ["src/IQP.Infrastructure/IQP.Infrastructure.csproj", "src/IQP.Infrastructure/"]
+COPY ["src/IQP.Application/IQP.Application.csproj", "src/IQP.Application/"]
+COPY ["src/IQP.Domain/IQP.Domain.csproj", "src/IQP.Domain/"]
+COPY ["src/IQP.Infrastructure.CodeRunner/IQP.Infrastructure.CodeRunner.csproj", "src/IQP.Infrastructure.CodeRunner/"]
+
+RUN dotnet restore "src/IQP.Web/IQP.Web.csproj"
 COPY . .
-WORKDIR "/src/IQP"
-RUN dotnet build "IQP.csproj" -c Release -o /app/build
+WORKDIR "/src/src/IQP.Web"
+RUN dotnet build "IQP.Web.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 FROM build AS publish
-RUN dotnet publish "IQP.csproj" -c Release -o /app/publish /p:UseAppHost=false
+ARG BUILD_CONFIGURATION=Release
+RUN dotnet publish "IQP.Web.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "IQP.dll"]
+ENTRYPOINT ["dotnet", "IQP.Web.dll"]

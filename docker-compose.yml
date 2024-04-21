@@ -1,0 +1,52 @@
+﻿networks:
+  dev:
+    driver: bridge
+
+services:
+  backend:
+    image: iqp.web
+    build:
+      context: .
+      dockerfile: src/IQP.Web/Dockerfile
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      - PostgresConnectionString=Server=db;Port=5432;Database=iqp;User Id=postgres;Password=password;Include Error Detail=True;IntegratedSecurity=True;
+      - JWT__Secret=tyt_byv_andrii-token_super_secret_key
+      - TestRunner__SamplesFolderPath=/samples
+      - TestRunner__SolutionsFolderPath=/solutions
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./Samples:/samples
+      - type: volume
+        source: shared
+        target: /solutions
+    depends_on:
+      - db
+    networks:
+      - dev
+  frontend:
+    image: iqp-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - VITE_API_URL=http://localhost
+    networks:
+      - dev
+  db:
+    image: postgres:latest
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=iqp
+    ports:
+      - "5433:5432"
+    volumes:
+      - ./data:/var/lib/postgresql/data
+    networks:
+      - dev
+volumes:
+  shared:
+    name: shared
