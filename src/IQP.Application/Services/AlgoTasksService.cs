@@ -16,7 +16,7 @@ namespace IQP.Application.Services;
 public class AlgoTasksService : IAlgoTasksService
 {
     private readonly IqpDbContext _db;
-    private readonly ITestRunner _codeTestRunner;
+    private readonly ITestRunnerService _codeFileTestRunner;
     private readonly ICurrentUserService _currentUser;
     private readonly IValidator<RunTestsOnCodeCommand> _runTestsOnCodeCommandValidator;
     private readonly IValidator<SubmitAlgoTaskSolutionCommand> _submitCodeCommandValidator;
@@ -29,7 +29,7 @@ public class AlgoTasksService : IAlgoTasksService
 
     public AlgoTasksService(
         IqpDbContext db,
-        ITestRunner codeTestRunner,
+        ITestRunnerService codeFileTestRunner,
         ICurrentUserService currentUser,
         IValidator<RunTestsOnCodeCommand> runTestsOnCodeCommandValidator, 
         IValidator<SubmitAlgoTaskSolutionCommand> submitCodeCommandValidator,
@@ -40,7 +40,7 @@ public class AlgoTasksService : IAlgoTasksService
         IUserService userService)
     {
         _db = db;
-        _codeTestRunner = codeTestRunner;
+        _codeFileTestRunner = codeFileTestRunner;
         _currentUser = currentUser;
         _runTestsOnCodeCommandValidator = runTestsOnCodeCommandValidator;
         _submitCodeCommandValidator = submitCodeCommandValidator;
@@ -55,7 +55,7 @@ public class AlgoTasksService : IAlgoTasksService
 
     private async Task<bool> ValidateAlgoTaskIsPassable(string initialSolutionCode, string testsCode, CodeLanguage language)
     {
-        var result = await _codeTestRunner.RunTestsOnCode(initialSolutionCode, testsCode, language.Slug, Guid.NewGuid().ToString());
+        var result = await _codeFileTestRunner.RunTestsOnCode(initialSolutionCode, testsCode, language.Slug, Guid.NewGuid().ToString());
         
         return result.Status is TestStatus.Pass;
     }
@@ -308,7 +308,7 @@ public class AlgoTasksService : IAlgoTasksService
                 "The code language with such id does not exist or is not supported. Therefore submission cannot be tested.");
         }
         
-        var result = await _codeTestRunner
+        var result = await _codeFileTestRunner
             .RunTestsOnCode(
                 command.Code,
                 command.Tests,
@@ -350,7 +350,7 @@ public class AlgoTasksService : IAlgoTasksService
         
         _logger.LogInformation("Running tests on code. Task: {task}, Language: {language}", algoTask.Id, specifiedLanguageSnippet.Language.Name);
         
-        var result = await _codeTestRunner
+        var result = await _codeFileTestRunner
             .RunTestsOnCode(
                 submissionCommand.Code,
                 specifiedLanguageSnippet.TestsCode,
@@ -395,7 +395,7 @@ public class AlgoTasksService : IAlgoTasksService
        
         _logger.LogInformation("Running tests on code. Task: {task}, Language: {language}, User: {username}", algoTask.Id, specifiedLanguageSnippet.Language.Name, user.UserName);
         
-        var result = await _codeTestRunner
+        var result = await _codeFileTestRunner
             .RunTestsOnCode(
                 submissionCommand.Code,
                 specifiedLanguageSnippet.TestsCode,

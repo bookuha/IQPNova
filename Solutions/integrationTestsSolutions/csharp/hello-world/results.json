@@ -1,0 +1,11 @@
+{
+  "version": 3,
+  "status": "pass",
+  "tests": [
+    {
+      "name": "Hello world",
+      "status": "pass",
+      "test_code": "Assert.Equal(\u0022Hello, World!\u0022, Solution.HelloWorld());"
+    }
+  ]
+}

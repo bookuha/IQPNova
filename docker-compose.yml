@@ -26,6 +26,14 @@ services:
       - db
     networks:
       - dev
+  frontend:
+    image: iqp-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - VITE_API_URL=http://localhost
+    networks:
+      - dev
   db:
     image: postgres:latest
     restart: always

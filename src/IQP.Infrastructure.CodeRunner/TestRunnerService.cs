@@ -9,7 +9,7 @@ using Microsoft.Extensions.Options;
 
 namespace IQP.Infrastructure.CodeRunner;
 
-public class DockerTestRunnerOptions
+public class TestRunnerOptions
 {
     public const string TestRunner = "TestRunner";
     // Folder with sample files for different languages. Each language has its own folder.
@@ -36,27 +36,20 @@ public class DockerTestRunnerOptions
 /// Results are then read from that file and TestRun object is returned. Solution folder is then deleted.
 /// </para>
 /// </remarks>
-public class DockerTestRunner : ITestRunner
+public class TestRunnerService : ITestRunnerService
 {
-    private readonly DockerTestRunnerOptions _options;
-    private readonly ILogger<DockerTestRunner> _logger;
+    private readonly TestRunnerOptions _options;
+    private readonly ILogger<TestRunnerService> _logger;
     private readonly ISlugToExecutorCodeLanguageConverter _slugToExecutorCodeLanguageConverter;
-
-    private static readonly IReadOnlyDictionary<ExecutorCodeLanguage, string>
-        CodeLanguageRunnerImages = // TODO: Introduce a new class for getting image by language
-            new ReadOnlyDictionary<ExecutorCodeLanguage, string>(new Dictionary<ExecutorCodeLanguage, string>
-            {
-                [ExecutorCodeLanguage.Csharp] = "exercism/csharp-test-runner",
-                [ExecutorCodeLanguage.Fsharp] = "exercism/fsharp-test-runner",
-                [ExecutorCodeLanguage.Java] = "exercism/java-test-runner"
-            });
+    private readonly IFileSolutionTestRunner _fileSolutionTestRunner;
     
-    public DockerTestRunner(IOptions<DockerTestRunnerOptions> options, ILogger<DockerTestRunner> logger,
-        ISlugToExecutorCodeLanguageConverter slugToExecutorCodeLanguageConverter)
+    public TestRunnerService(IOptions<TestRunnerOptions> options, ILogger<TestRunnerService> logger,
+        ISlugToExecutorCodeLanguageConverter slugToExecutorCodeLanguageConverter, IFileSolutionTestRunner fileSolutionTestRunner)
     {
         _options = options.Value;
         _logger = logger;
         _slugToExecutorCodeLanguageConverter = slugToExecutorCodeLanguageConverter;
+        _fileSolutionTestRunner = fileSolutionTestRunner;
     }
 
     public Task<TestRun> RunTestsOnCode(string solutionCode, string testsCode, string languageSlug, string username)
@@ -78,16 +71,11 @@ public class DockerTestRunner : ITestRunner
             // Solution - just a convention for the name of the files you need to run the actual code in different languages.
             var createdSolutionDir =
                 await CreateSolutionFiles(expectedSolutionPath, solutionCode, testsCode, codeLanguage);
-            await RunCodeInDocker(createdSolutionDir.FullName, codeLanguage);
-            var resultsJson = await ReadResultsJson(expectedSolutionPath);
-
-            _logger.LogInformation("Results: {Results}", resultsJson);
-            CleanUp(createdSolutionDir.FullName);
-
-            var options = new JsonSerializerOptions();
-            options.Converters.Add(new JsonStringEnumConverter());
-            return JsonSerializer.Deserialize<TestRun>(resultsJson, options)!;
+            var result = await _fileSolutionTestRunner.RunTestsAsync(createdSolutionDir.FullName, codeLanguage);
+            CleanUp(expectedSolutionPath);
+            return result;
         }
+        
         catch (Exception)
         {
             CleanUp(expectedSolutionPath);
@@ -172,40 +160,7 @@ public class DockerTestRunner : ITestRunner
         await using var writer = new StreamWriter(filePath, true, Encoding.UTF8);
         await writer.WriteAsync(code);
     }
-
-    private async Task RunCodeInDocker(string solutionPath, ExecutorCodeLanguage codeLanguage)
-    {
-        var client = new DockerClientConfiguration().CreateClient();
-
-        var container = await client.Containers.CreateContainerAsync(new CreateContainerParameters
-        {
-            Image = CodeLanguageRunnerImages[codeLanguage],
-            Cmd = new List<string> {"Solution", solutionPath, solutionPath},
-            HostConfig = new HostConfig
-            {
-                NetworkMode = "none",
-                Mounts = new List<Mount> {new() {Type = "volume", Source = "shared", Target = "/solutions"}}
-            }
-        });
-
-        await client.Containers.StartContainerAsync(container.ID, new ContainerStartParameters());
-
-        var result = await client.Containers.WaitContainerAsync(container.ID);
-
-        var logStream = await client.Containers.GetContainerLogsAsync(container.ID, new ContainerLogsParameters
-        {
-            ShowStdout = true,
-            ShowStderr = true
-        });
-
-        using var reader = new StreamReader(logStream);
-        var log = await reader.ReadToEndAsync();
-
-        _logger.LogInformation("Code running Container log: {Log}", log);
-
-        await client.Containers.RemoveContainerAsync(container.ID, new ContainerRemoveParameters());
-    }
-
+    
     private static Task<string> ReadResultsJson(string solutionDir)
     {
         return File.ReadAllTextAsync(solutionDir + "/results.json");

@@ -1,3 +1,4 @@
+using FluentValidation;
 using IQP.Application.Contracts.Commentaries;
 using IQP.Application.Contracts.Commentaries.Commands;
 using IQP.Application.Services.Validators;
@@ -8,6 +9,7 @@ using IQP.Infrastructure.Data;
 using IQP.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using ValidationException = IQP.Domain.Exceptions.ValidationException;
 
 namespace IQP.Application.Services;
 
@@ -15,17 +17,15 @@ public class CommentariesService : ICommentariesService
 {
     private readonly IqpDbContext _db;
     private readonly ICurrentUserService _currentUser;
-    private readonly CreateCommentaryCommandValidator _createCommentaryCommandValidator;
-    private readonly UpdateCommentaryCommandValidator _updateCommentaryCommandValidator;
-    private ILogger<CommentariesService> _logger;
+    private readonly IValidator<CreateCommentaryCommand> _createCommentaryCommandValidator;
+    private readonly ILogger<CommentariesService> _logger;
 
 
-    public CommentariesService(IqpDbContext db, ICurrentUserService currentUser, CreateCommentaryCommandValidator createCommentaryCommandValidator, UpdateCommentaryCommandValidator updateCommentaryCommandValidator, ILogger<CommentariesService> logger)
+    public CommentariesService(IqpDbContext db, ICurrentUserService currentUser, IValidator<CreateCommentaryCommand> createCommentaryCommandValidator, ILogger<CommentariesService> logger)
     {
         _db = db;
         _currentUser = currentUser;
         _createCommentaryCommandValidator = createCommentaryCommandValidator;
-        _updateCommentaryCommandValidator = updateCommentaryCommandValidator;
         _logger = logger;
     }
 

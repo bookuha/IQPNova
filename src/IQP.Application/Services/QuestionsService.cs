@@ -17,11 +17,11 @@ public class QuestionsService : IQuestionsService
 {
     private readonly IqpDbContext _db;
     private readonly ICurrentUserService _currentUser;
-    private readonly CreateQuestionCommandValidator _createQuestionCommandValidator;
-    private readonly UpdateQuestionCommandValidator _updateQuestionCommandValidator;
+    private readonly IValidator<CreateQuestionCommand> _createQuestionCommandValidator;
+    private readonly IValidator<UpdateQuestionCommand> _updateQuestionCommandValidator;
     private ILogger<QuestionsService> _logger;
 
-    public QuestionsService(IqpDbContext db, ICurrentUserService currentUser, CreateQuestionCommandValidator createQuestionCommandValidator, UpdateQuestionCommandValidator updateQuestionCommandValidator, ILogger<QuestionsService> logger)
+    public QuestionsService(IqpDbContext db, ICurrentUserService currentUser, IValidator<CreateQuestionCommand> createQuestionCommandValidator, IValidator<UpdateQuestionCommand> updateQuestionCommandValidator, ILogger<QuestionsService> logger)
     {
         _db = db;
         _currentUser = currentUser;

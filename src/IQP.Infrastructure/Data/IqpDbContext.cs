@@ -8,16 +8,21 @@ namespace IQP.Infrastructure.Data;
 
 public class IqpDbContext : IdentityDbContext<User, IdentityRole<Guid>, Guid>
 {
+    public IqpDbContext()
+    {
+    }
+    
     public IqpDbContext(DbContextOptions<IqpDbContext> options) : base(options)
     {
     }
     
-    public DbSet<Question> Questions { get; set; }
-    public DbSet<Category> Categories { get; set; }
-    public DbSet<Commentary> Commentaries { get; set; }
-    public DbSet<AlgoTask> AlgoTasks { get; set; }
-    public DbSet<AlgoTaskCategory> AlgoTaskCategories { get; set; }
-    public DbSet<CodeLanguage> CodeLanguages { get; set; }
+    // DbSets are virtual to allow mocking in unit tests
+    public virtual DbSet<Question> Questions { get; set; }
+    public virtual DbSet<Category> Categories { get; set; }
+    public virtual DbSet<Commentary> Commentaries { get; set; }
+    public virtual DbSet<AlgoTask> AlgoTasks { get; set; }
+    public virtual DbSet<AlgoTaskCategory> AlgoTaskCategories { get; set; }
+    public virtual DbSet<CodeLanguage> CodeLanguages { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -35,5 +40,7 @@ public class IqpDbContext : IdentityDbContext<User, IdentityRole<Guid>, Guid>
         modelBuilder.ApplyConfiguration(new AlgoTaskCategoryConfiguration());
         modelBuilder.ApplyConfiguration(new CodeLanguageConfiguration());
         modelBuilder.ApplyConfiguration(new AlgoTaskCodeSnippetConfiguration());
+        // Seed code languages, algo task category and a simple algo task
+        IqpDataSeeder.Seed(modelBuilder);
     }
 }

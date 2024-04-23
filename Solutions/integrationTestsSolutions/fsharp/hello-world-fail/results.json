@@ -1,0 +1,12 @@
+{
+  "version": 3,
+  "status": "fail",
+  "tests": [
+    {
+      "name": "helloWorld returns Hello, world!",
+      "status": "fail",
+      "message": "Assert.Equal() Failure\n                 \u2193 (pos 7)\nExpected: Hello, world!\nActual:   Hello, Guys!\n                 \u2191 (pos 7)",
+      "test_code": "let actual = helloWorld ()\nAssert.Equal(\u0022Hello, world!\u0022, actual)"
+    }
+  ]
+}
