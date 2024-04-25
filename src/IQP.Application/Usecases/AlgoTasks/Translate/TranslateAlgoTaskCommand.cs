@@ -4,8 +4,10 @@ using IQP.Application.Services.Users;
 using IQP.Domain;
 using IQP.Domain.Entities;
 using IQP.Domain.Exceptions;
+using IQP.Domain.Repositories;
 using IQP.Infrastructure.CodeRunner;
 using IQP.Infrastructure.Data;
+using IQP.Infrastructure.Repositories;
 using IQP.Infrastructure.Services;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -21,16 +23,19 @@ public record TranslateAlgoTaskCommand : IRequest<AlgoTaskResponse>
 
 public class TranslateAlgoTaskCommandHandler : IRequestHandler<TranslateAlgoTaskCommand, AlgoTaskResponse>
 {
-    private readonly IqpDbContext _db;
+    private readonly IUnitOfWork _unitOfWork;
+    private readonly IAlgoTasksRepository _algoTasksRepository;
+    private readonly ICodeLanguagesRepository _codeLanguagesRepository;
     private readonly IUserService _userService;
     private readonly ICurrentUserService _currentUser;
     private readonly ITestRunnerService _testRunner;
     private readonly IValidator<TranslateAlgoTaskCommand> _validator;
-
-
-    public TranslateAlgoTaskCommandHandler(IqpDbContext db, IUserService userService, ICurrentUserService currentUser, ITestRunnerService testRunner, IValidator<TranslateAlgoTaskCommand> validator)
+    
+    public TranslateAlgoTaskCommandHandler(IUnitOfWork unitOfWork, IAlgoTasksRepository algoTasksRepository, ICodeLanguagesRepository codeLanguagesRepository, IUserService userService, ICurrentUserService currentUser, ITestRunnerService testRunner, IValidator<TranslateAlgoTaskCommand> validator)
     {
-        _db = db;
+        _unitOfWork = unitOfWork;
+        _algoTasksRepository = algoTasksRepository;
+        _codeLanguagesRepository = codeLanguagesRepository;
         _userService = userService;
         _currentUser = currentUser;
         _testRunner = testRunner;
@@ -46,11 +51,7 @@ public class TranslateAlgoTaskCommandHandler : IRequestHandler<TranslateAlgoTask
             throw new ValidationException(EntityName.AlgoTask, commandValidationResult.ToDictionary());
         }
         
-        var algoTask = await _db.AlgoTasks
-            .Include(t=>t.AlgoCategory)
-            .Include(t=>t.CodeSnippets)
-                .ThenInclude(c=>c.Language)
-            .SingleOrDefaultAsync(t=>t.Id == command.AlgoTaskId);
+        var algoTask = await _algoTasksRepository.GetByIdAsync(command.AlgoTaskId, cancellationToken);
 
         if (algoTask is null)
         {
@@ -69,7 +70,7 @@ public class TranslateAlgoTaskCommandHandler : IRequestHandler<TranslateAlgoTask
                 "The algo task already has such language support. Therefore addition cannot be made.");
         }
         
-        var language = await _db.CodeLanguages.FindAsync(command.InitialCodeSnippet.LanguageId);
+        var language = await _codeLanguagesRepository.GetByIdAsync(command.InitialCodeSnippet.LanguageId, cancellationToken);
         
         if (language is null)
         {
@@ -98,7 +99,8 @@ public class TranslateAlgoTaskCommandHandler : IRequestHandler<TranslateAlgoTask
         };
         
         algoTask.CodeSnippets.Add(codeSnippet); 
-        await _db.SaveChangesAsync();
+        _algoTasksRepository.Update(algoTask);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return algoTask.ToResponse(Functions.GetTaskSupportedLanguages(algoTask), algoTask.CodeSnippets, false);
     }

@@ -5,7 +5,9 @@ using IQP.Application.Services.Users;
 using IQP.Domain;
 using IQP.Domain.Entities;
 using IQP.Domain.Exceptions;
+using IQP.Domain.Repositories;
 using IQP.Infrastructure.Data;
+using IQP.Infrastructure.Repositories;
 using IQP.Infrastructure.Services;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -21,15 +23,17 @@ public record CreateAlgoTaskCategoryCommand : IRequest<AlgoTaskCategoryResponse>
 
 public class CreateAlgoTaskCategoryCommandHandler : IRequestHandler<CreateAlgoTaskCategoryCommand, AlgoTaskCategoryResponse>
 {
-    private readonly IqpDbContext _db;
+    private readonly IUnitOfWork _unitOfWork;
+    private readonly IAlgoCategoriesRepository _algoCategoriesRepository;
     private readonly IUserService _userService;
     private readonly ICurrentUserService _currentUser;
     private readonly IValidator<CreateAlgoTaskCategoryCommand> _createAlgoTaskCategoryCommandValidator;
     private readonly ILogger<CreateAlgoTaskCategoryCommandHandler> _logger;
-
-    public CreateAlgoTaskCategoryCommandHandler(IqpDbContext db, IUserService userService, ICurrentUserService currentUser, IValidator<CreateAlgoTaskCategoryCommand> createAlgoTaskCategoryCommandValidator, ILogger<CreateAlgoTaskCategoryCommandHandler> logger)
+    
+    public CreateAlgoTaskCategoryCommandHandler(IUnitOfWork unitOfWork, IAlgoCategoriesRepository algoCategoriesRepository, IUserService userService, ICurrentUserService currentUser, IValidator<CreateAlgoTaskCategoryCommand> createAlgoTaskCategoryCommandValidator, ILogger<CreateAlgoTaskCategoryCommandHandler> logger)
     {
-        _db = db;
+        _unitOfWork = unitOfWork;
+        _algoCategoriesRepository = algoCategoriesRepository;
         _userService = userService;
         _currentUser = currentUser;
         _createAlgoTaskCategoryCommandValidator = createAlgoTaskCategoryCommandValidator;
@@ -55,7 +59,7 @@ public class CreateAlgoTaskCategoryCommandHandler : IRequestHandler<CreateAlgoTa
             throw new ValidationException(EntityName.AlgoCategory, commandValidationResult.ToDictionary());
         }
         
-        var titleAlreadyExists = _db.AlgoTaskCategories.Any(c => c.Title == command.Title);
+        var titleAlreadyExists = await _algoCategoriesRepository.TitleExistsAsync(command.Title, cancellationToken);
 
         if (titleAlreadyExists)
         {
@@ -69,9 +73,8 @@ public class CreateAlgoTaskCategoryCommandHandler : IRequestHandler<CreateAlgoTa
             Description = command.Description
         };
 
-        _db.Add(category);
-        
-        await _db.SaveChangesAsync();
+        _algoCategoriesRepository.Add(category);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
         
         _logger.LogInformation("Category with id {CategoryId}, {Title} has been created", category.Id, category.Title);
 

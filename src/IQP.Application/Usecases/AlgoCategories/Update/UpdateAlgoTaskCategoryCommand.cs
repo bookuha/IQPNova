@@ -3,7 +3,9 @@ using IQP.Application.Contracts.AlgoTaskCategories.Responses;
 using IQP.Application.Services.Users;
 using IQP.Domain;
 using IQP.Domain.Exceptions;
+using IQP.Domain.Repositories;
 using IQP.Infrastructure.Data;
+using IQP.Infrastructure.Repositories;
 using IQP.Infrastructure.Services;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -20,15 +22,17 @@ public record UpdateAlgoTaskCategoryCommand : IRequest<AlgoTaskCategoryResponse>
 
 public class UpdateAlgoTaskCategoryCommandHandler : IRequestHandler<UpdateAlgoTaskCategoryCommand, AlgoTaskCategoryResponse>
 {
-    private readonly IqpDbContext _db;
+    private readonly IUnitOfWork _unitOfWork;
+    private readonly IAlgoCategoriesRepository _algoCategoriesRepository;
     private readonly IUserService _userService;
     private readonly ICurrentUserService _currentUser;
     private readonly IValidator<UpdateAlgoTaskCategoryCommand> _validator;
     private readonly ILogger<UpdateAlgoTaskCategoryCommandHandler> _logger;
-
-    public UpdateAlgoTaskCategoryCommandHandler(IqpDbContext db, IUserService userService, ICurrentUserService currentUser, IValidator<UpdateAlgoTaskCategoryCommand> validator, ILogger<UpdateAlgoTaskCategoryCommandHandler> logger)
+    
+    public UpdateAlgoTaskCategoryCommandHandler(IUnitOfWork unitOfWork, IAlgoCategoriesRepository algoCategoriesRepository, IUserService userService, ICurrentUserService currentUser, IValidator<UpdateAlgoTaskCategoryCommand> validator, ILogger<UpdateAlgoTaskCategoryCommandHandler> logger)
     {
-        _db = db;
+        _unitOfWork = unitOfWork;
+        _algoCategoriesRepository = algoCategoriesRepository;
         _userService = userService;
         _currentUser = currentUser;
         _validator = validator;
@@ -48,8 +52,16 @@ public class UpdateAlgoTaskCategoryCommandHandler : IRequestHandler<UpdateAlgoTa
         {
             throw new ValidationException(EntityName.AlgoCategory, commandValidationResult.ToDictionary());
         }
+        
+        var titleAlreadyExists = await _algoCategoriesRepository.TitleExistsAsync(command.Title, cancellationToken);
 
-        var category = await _db.AlgoTaskCategories.FindAsync(command.Id);
+        if (titleAlreadyExists)
+        {
+            throw new IqpException(
+                EntityName.AlgoCategory,Errors.AlreadyExists.ToString(), "Already exists", "The category with such title already exists.");
+        }
+
+        var category = await _algoCategoriesRepository.GetByIdAsync(command.Id, cancellationToken);
 
         if (category is null)
         {
@@ -59,7 +71,8 @@ public class UpdateAlgoTaskCategoryCommandHandler : IRequestHandler<UpdateAlgoTa
         category.Title = command.Title;
         category.Description = command.Description;
 
-        await _db.SaveChangesAsync();
+        _algoCategoriesRepository.Update(category);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         _logger.LogInformation("Category with id {CategoryId}, {Title} has been updated", category.Id, category.Title);
 

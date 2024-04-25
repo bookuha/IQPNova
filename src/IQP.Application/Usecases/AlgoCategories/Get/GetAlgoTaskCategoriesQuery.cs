@@ -1,4 +1,5 @@
 ﻿using IQP.Application.Contracts.AlgoTaskCategories.Responses;
+using IQP.Domain.Repositories;
 using IQP.Infrastructure.Data;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -12,17 +13,18 @@ public record GetAlgoTaskCategoriesQuery : IRequest<IEnumerable<AlgoTaskCategory
 
 public class GetAlgoTaskCategoriesQueryHandler : IRequestHandler<GetAlgoTaskCategoriesQuery, IEnumerable<AlgoTaskCategoryResponse>>
 {
-    private readonly IqpDbContext _db;
+    private readonly IAlgoCategoriesRepository _algoCategoriesRepository;
 
-    public GetAlgoTaskCategoriesQueryHandler(IqpDbContext db)
+    public GetAlgoTaskCategoriesQueryHandler(IAlgoCategoriesRepository algoCategoriesRepository)
     {
-        _db = db;
+        _algoCategoriesRepository = algoCategoriesRepository;
     }
+
 
     public async Task<IEnumerable<AlgoTaskCategoryResponse>> Handle(GetAlgoTaskCategoriesQuery request, CancellationToken cancellationToken)
     {
-        return await _db.AlgoTaskCategories
-            .Select(c => c.ToResponse())
-            .ToListAsync();
+        var categories = await _algoCategoriesRepository.GetAsync(cancellationToken);
+
+        return categories.Select(c => c.ToResponse());
     }
 }

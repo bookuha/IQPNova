@@ -4,8 +4,10 @@ using IQP.Application.Services.Users;
 using IQP.Domain;
 using IQP.Domain.Entities;
 using IQP.Domain.Exceptions;
+using IQP.Domain.Repositories;
 using IQP.Infrastructure.CodeRunner;
 using IQP.Infrastructure.Data;
+using IQP.Infrastructure.Repositories;
 using IQP.Infrastructure.Services;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -23,20 +25,25 @@ public record CreateAlgoTaskCommand : IRequest<AlgoTaskResponse>
 
 public class CreateAlgoTaskCommandHandler : IRequestHandler<CreateAlgoTaskCommand, AlgoTaskResponse>
 {
-   private readonly IqpDbContext _db;
+   private readonly IUnitOfWork _unitOfWork;
+   private readonly IAlgoTasksRepository _algoTasksRepository;
+   private readonly IAlgoCategoriesRepository _algoCategoriesRepository;
+   private readonly ICodeLanguagesRepository _codeLanguagesRepository;
    private readonly IUserService _userService;
    private readonly ICurrentUserService _currentUser;
    private readonly ITestRunnerService _testRunner;
    private readonly IValidator<CreateAlgoTaskCommand> _validator;
-
-
-   public CreateAlgoTaskCommandHandler(IqpDbContext db, IUserService userService, ICurrentUserService currentUser, ITestRunnerService testRunner, IValidator<CreateAlgoTaskCommand> validator)
+   
+   public CreateAlgoTaskCommandHandler(IUnitOfWork unitOfWork, IAlgoTasksRepository algoTasksRepository, IAlgoCategoriesRepository algoCategoriesRepository, ICodeLanguagesRepository codeLanguagesRepository, IUserService userService, ICurrentUserService currentUser, ITestRunnerService testRunner, IValidator<CreateAlgoTaskCommand> validator)
    {
-      _db = db;
-      _userService = userService;
-      _currentUser = currentUser;
-      _testRunner = testRunner;
-      _validator = validator;
+       _unitOfWork = unitOfWork;
+       _algoTasksRepository = algoTasksRepository;
+       _algoCategoriesRepository = algoCategoriesRepository;
+       _codeLanguagesRepository = codeLanguagesRepository;
+       _userService = userService;
+       _currentUser = currentUser;
+       _testRunner = testRunner;
+       _validator = validator;
    }
 
    public async Task<AlgoTaskResponse> Handle(CreateAlgoTaskCommand command, CancellationToken cancellationToken)
@@ -54,7 +61,7 @@ public class CreateAlgoTaskCommandHandler : IRequestHandler<CreateAlgoTaskComman
                commandValidationResult.ToDictionary());
        }
 
-       var titleAlreadyExists = await _db.AlgoTasks.AnyAsync(c => c.Title == command.Title);
+       var titleAlreadyExists = await _algoTasksRepository.TitleExistsAsync(command.Title);
 
        if (titleAlreadyExists)
        {
@@ -63,7 +70,7 @@ public class CreateAlgoTaskCommandHandler : IRequestHandler<CreateAlgoTaskComman
                "The algo task with such title already exists.");
        }
 
-       var algoCategory = await _db.AlgoTaskCategories.FindAsync(command.AlgoCategoryId);
+       var algoCategory = await _algoCategoriesRepository.GetByIdAsync(command.AlgoCategoryId, cancellationToken);
 
        if (algoCategory is null)
        {
@@ -72,7 +79,7 @@ public class CreateAlgoTaskCommandHandler : IRequestHandler<CreateAlgoTaskComman
                "The algo category with such id does not exist. Therefore algo task cannot be created.");
        }
 
-       var language = await _db.CodeLanguages.FindAsync(command.InitialCodeSnippet.LanguageId);
+       var language = await _codeLanguagesRepository.GetByIdAsync(command.InitialCodeSnippet.LanguageId, cancellationToken);
 
        if (language is null)
        {
@@ -108,9 +115,9 @@ public class CreateAlgoTaskCommandHandler : IRequestHandler<CreateAlgoTaskComman
                }
            },
        };
-
-       await _db.AlgoTasks.AddAsync(algoTask);
-       await _db.SaveChangesAsync();
+       
+       _algoTasksRepository.Add(algoTask);
+       await _unitOfWork.SaveChangesAsync(cancellationToken);
 
        return algoTask.ToResponse(Functions.GetTaskSupportedLanguages(algoTask), algoTask.CodeSnippets, false);
    }

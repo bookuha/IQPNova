@@ -1,5 +1,6 @@
 ﻿using IQP.Domain;
 using IQP.Domain.Exceptions;
+using IQP.Domain.Repositories;
 using IQP.Infrastructure.Data;
 using MediatR;
 
@@ -12,16 +13,16 @@ public record GetCategoryByIdQuery : IRequest<CategoryResponse>
 
 public class GetCategoryByIdQueryHandler : IRequestHandler<GetCategoryByIdQuery, CategoryResponse>
 {
-    private readonly IqpDbContext _db;
+    private readonly ICategoriesRepository _categoriesRepository;
 
-    public GetCategoryByIdQueryHandler(IqpDbContext db)
+    public GetCategoryByIdQueryHandler(ICategoriesRepository categoriesRepository)
     {
-        _db = db;
+        _categoriesRepository = categoriesRepository;
     }
 
     public async Task<CategoryResponse> Handle(GetCategoryByIdQuery request, CancellationToken cancellationToken)
     {
-        var category = await _db.Categories.FindAsync(request.Id);
+        var category = await _categoriesRepository.GetByIdAsync(request.Id, cancellationToken);
         
         if (category is null)
         {

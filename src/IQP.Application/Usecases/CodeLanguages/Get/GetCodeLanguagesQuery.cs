@@ -1,4 +1,5 @@
 ﻿using IQP.Application.Contracts.CodeLanguages.Responses;
+using IQP.Domain.Repositories;
 using IQP.Infrastructure.Data;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -12,15 +13,17 @@ public record GetCodeLanguagesQuery : IRequest<IEnumerable<CodeLanguageResponse>
 
 public class GetCodeLanguagesQueryHandler : IRequestHandler<GetCodeLanguagesQuery, IEnumerable<CodeLanguageResponse>>
 {
-    private readonly IqpDbContext _db;
-    
-    public GetCodeLanguagesQueryHandler(IqpDbContext db)
+    private readonly ICodeLanguagesRepository _codeLanguagesRepository;
+
+    public GetCodeLanguagesQueryHandler(ICodeLanguagesRepository codeLanguagesRepository)
     {
-        _db = db;
+        _codeLanguagesRepository = codeLanguagesRepository;
     }
-    
+
     public async Task<IEnumerable<CodeLanguageResponse>> Handle(GetCodeLanguagesQuery request, CancellationToken cancellationToken)
     {
-        return await _db.CodeLanguages.Select(l => l.ToResponse()).ToListAsync();
+        var languages = await _codeLanguagesRepository.GetAsync(cancellationToken);
+
+        return languages.Select(l => l.ToResponse());
     }
 }

@@ -1,8 +1,11 @@
 ﻿using FluentValidation;
+using IQP.Application.Services.Users;
 using IQP.Domain;
 using IQP.Domain.Entities;
 using IQP.Domain.Exceptions;
+using IQP.Domain.Repositories;
 using IQP.Infrastructure.Data;
+using IQP.Infrastructure.Repositories;
 using IQP.Infrastructure.Services;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -19,15 +22,20 @@ public class CreateQuestionCommand : IRequest<QuestionResponse>
 
 public class CreateQuestionCommandHandler : IRequestHandler<CreateQuestionCommand, QuestionResponse>
 {
-    private readonly IqpDbContext _db;
+    private readonly IUnitOfWork _unitOfWork;
+    private readonly IQuestionsRepository _questionsRepository;
+    private readonly ICategoriesRepository _categoriesRepository;
+    private readonly IUserService _userService;
     private readonly ICurrentUserService _currentUser;
     private readonly ILogger<CreateQuestionCommandHandler> _logger;
     private readonly IValidator<CreateQuestionCommand> _validator;
-
-
-    public CreateQuestionCommandHandler(IqpDbContext db, ICurrentUserService currentUser, ILogger<CreateQuestionCommandHandler> logger, IValidator<CreateQuestionCommand> validator)
+    
+    public CreateQuestionCommandHandler(IUnitOfWork unitOfWork, IQuestionsRepository questionsRepository, ICategoriesRepository categoriesRepository, IUserService userService, ICurrentUserService currentUser, ILogger<CreateQuestionCommandHandler> logger, IValidator<CreateQuestionCommand> validator)
     {
-        _db = db;
+        _unitOfWork = unitOfWork;
+        _questionsRepository = questionsRepository;
+        _categoriesRepository = categoriesRepository;
+        _userService = userService;
         _currentUser = currentUser;
         _logger = logger;
         _validator = validator;
@@ -42,7 +50,7 @@ public class CreateQuestionCommandHandler : IRequestHandler<CreateQuestionComman
             throw new ValidationException(EntityName.Question, commandValidationResult.ToDictionary());
         }
 
-        var category = await _db.Categories.FindAsync(command.CategoryId);
+        var category = await _categoriesRepository.GetByIdAsync(command.CategoryId, cancellationToken);
         
         if (category is null)
         {
@@ -51,7 +59,7 @@ public class CreateQuestionCommandHandler : IRequestHandler<CreateQuestionComman
                 "The category with such id does not exist. Therefore question cannot be created.");
         }
         
-        var user = await _db.Users.FindAsync(_currentUser.UserId.Value); // TODO: Add null check here / do something at all
+        var user = await _userService.GetUserByIdAsync(_currentUser.UserId.Value);
 
         var question = new Question
         {
@@ -61,8 +69,8 @@ public class CreateQuestionCommandHandler : IRequestHandler<CreateQuestionComman
             CategoryId = command.CategoryId
         };
 
-        _db.Add(question);
-        await _db.SaveChangesAsync();
+        _questionsRepository.Add(question);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
         
         _logger.LogInformation("Question with id {QuestionId}, {Title} has been created", question.Id, question.Title);
 

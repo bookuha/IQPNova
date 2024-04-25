@@ -1,5 +1,6 @@
 ﻿using IQP.Domain;
 using IQP.Domain.Exceptions;
+using IQP.Domain.Repositories;
 using IQP.Infrastructure.Data;
 using IQP.Infrastructure.Services;
 using MediatR;
@@ -14,23 +15,18 @@ public record GetAlgoTaskByIdQuery : IRequest<AlgoTaskResponse>
 
 public class GetAlgoTaskByIdQueryHandler : IRequestHandler<GetAlgoTaskByIdQuery, AlgoTaskResponse>
 {
-    private readonly IqpDbContext _db;
+    private readonly IAlgoTasksRepository _algoTasksRepository;
     private readonly ICurrentUserService _currentUser;
-
-    public GetAlgoTaskByIdQueryHandler(IqpDbContext db, ICurrentUserService currentUser)
+    
+    public GetAlgoTaskByIdQueryHandler(IAlgoTasksRepository algoTasksRepository, ICurrentUserService currentUser)
     {
-        _db = db;
+        _algoTasksRepository = algoTasksRepository;
         _currentUser = currentUser;
     }
 
     public async Task<AlgoTaskResponse> Handle(GetAlgoTaskByIdQuery request, CancellationToken cancellationToken)
     {
-        var algoTask = await _db.AlgoTasks
-            .Include(t=>t.AlgoCategory)
-            .Include(t=>t.CodeSnippets)
-            .ThenInclude(c=>c.Language)
-            .Include(t => t.PassedBy)
-            .SingleOrDefaultAsync(t=>t.Id == request.Id);
+        var algoTask = await _algoTasksRepository.GetByIdAsync(request.Id, cancellationToken);
         
         if (algoTask is null)
         {
@@ -41,7 +37,6 @@ public class GetAlgoTaskByIdQueryHandler : IRequestHandler<GetAlgoTaskByIdQuery,
         if (!_currentUser.IsAuthenticated) return algoTask.ToResponse(Functions.GetTaskSupportedLanguages(algoTask), algoTask.CodeSnippets, false);
         var isPassed = algoTask.PassedBy.Any(u => u.Id == _currentUser.UserId);
         return algoTask.ToResponse(Functions.GetTaskSupportedLanguages(algoTask), algoTask.CodeSnippets, isPassed);
-        
     }
 }
 

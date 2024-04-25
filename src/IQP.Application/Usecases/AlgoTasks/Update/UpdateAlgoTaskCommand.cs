@@ -3,7 +3,9 @@ using IQP.Application.Services;
 using IQP.Application.Services.Users;
 using IQP.Domain;
 using IQP.Domain.Exceptions;
+using IQP.Domain.Repositories;
 using IQP.Infrastructure.Data;
+using IQP.Infrastructure.Repositories;
 using IQP.Infrastructure.Services;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -21,15 +23,18 @@ public record UpdateAlgoTaskCommand : IRequest<AlgoTaskResponse>
 
 public class UpdateAlgoTaskCommandHandler : IRequestHandler<UpdateAlgoTaskCommand, AlgoTaskResponse>
 {
-    private readonly IqpDbContext _db;
+    private readonly IUnitOfWork _unitOfWork;
+    private readonly IAlgoTasksRepository _algoTasksRepository;
+    private readonly IAlgoCategoriesRepository _algoCategoriesRepository;
     private readonly IUserService _userService;
     private readonly ICurrentUserService _currentUser;
     private readonly IValidator<UpdateAlgoTaskCommand> _validator;
-
-
-    public UpdateAlgoTaskCommandHandler(IqpDbContext db, IUserService userService, ICurrentUserService currentUser, IValidator<UpdateAlgoTaskCommand> validator)
+    
+    public UpdateAlgoTaskCommandHandler(IUnitOfWork unitOfWork, IAlgoTasksRepository algoTasksRepository, IAlgoCategoriesRepository algoCategoriesRepository, IUserService userService, ICurrentUserService currentUser, IValidator<UpdateAlgoTaskCommand> validator)
     {
-        _db = db;
+        _unitOfWork = unitOfWork;
+        _algoTasksRepository = algoTasksRepository;
+        _algoCategoriesRepository = algoCategoriesRepository;
         _userService = userService;
         _currentUser = currentUser;
         _validator = validator;
@@ -50,12 +55,7 @@ public class UpdateAlgoTaskCommandHandler : IRequestHandler<UpdateAlgoTaskComman
                 commandValidationResult.ToDictionary());
         }
         
-        var algoTask = await _db.AlgoTasks
-            .Include(t=>t.AlgoCategory)
-            .Include(t=>t.CodeSnippets)
-            .ThenInclude(c=>c.Language)
-            .Include(t=>t.PassedBy)
-            .SingleOrDefaultAsync(t=>t.Id == command.Id);
+        var algoTask = await _algoTasksRepository.GetByIdAsync(command.Id, cancellationToken);
 
         if (algoTask is null)
         {
@@ -63,8 +63,9 @@ public class UpdateAlgoTaskCommandHandler : IRequestHandler<UpdateAlgoTaskComman
                 $"{EntityName.AlgoTask}", Errors.NotFound.ToString(), "AlgoTask not found",
                 "The algo task with such id does not exist. Therefore update cannot be made.");
         }
-        
-        var titleAlreadyExists = await _db.AlgoTasks.AnyAsync(c => c.Title == command.Title && c.Id != command.Id);
+
+        var titleAlreadyExists =
+            await _algoTasksRepository.TitleExistsExceptInAsync(command.Title, command.Id, cancellationToken);
         if(titleAlreadyExists)
         {
             throw new IqpException(
@@ -72,7 +73,7 @@ public class UpdateAlgoTaskCommandHandler : IRequestHandler<UpdateAlgoTaskComman
                 "The algo task with such title already exists. Therefore update cannot be made.");
         }
         
-        var newAlgoCategory = await _db.AlgoTaskCategories.FindAsync(command.AlgoCategoryId);
+        var newAlgoCategory = await _algoCategoriesRepository.GetByIdAsync(command.AlgoCategoryId, cancellationToken);
         if(newAlgoCategory is null)
         {
             throw new IqpException(
@@ -84,7 +85,8 @@ public class UpdateAlgoTaskCommandHandler : IRequestHandler<UpdateAlgoTaskComman
         algoTask.Description = command.Description;
         algoTask.AlgoCategoryId = command.AlgoCategoryId;
         
-        await _db.SaveChangesAsync();
+        _algoTasksRepository.Update(algoTask);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
         
         var isPassed = algoTask.PassedBy.Any(u => u.Id == _currentUser.UserId);
         return algoTask.ToResponse(Functions.GetTaskSupportedLanguages(algoTask), algoTask.CodeSnippets, isPassed);

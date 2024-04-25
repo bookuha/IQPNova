@@ -2,8 +2,10 @@
 using IQP.Application.Usecases.AlgoTasks.SubmitSolution;
 using IQP.Domain;
 using IQP.Domain.Exceptions;
+using IQP.Domain.Repositories;
 using IQP.Infrastructure.CodeRunner;
 using IQP.Infrastructure.Data;
+using IQP.Infrastructure.Repositories;
 using IQP.Infrastructure.Services;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -21,16 +23,17 @@ public record TryAlgoTaskSolutionCommand : IRequest<TestRun>
 
 public class TryAlgoTaskSolutionCommandHandler : IRequestHandler<TryAlgoTaskSolutionCommand, TestRun>
 {
-    private readonly IqpDbContext _db;
+    private readonly IUnitOfWork _unitOfWork;
+    private readonly IAlgoTasksRepository _algoTasksRepository;
     private readonly ICurrentUserService _currentUser;
     private readonly IValidator<TryAlgoTaskSolutionCommand> _validator;
     private readonly ITestRunnerService _testRunner;
     private readonly ILogger<SubmitAlgoTaskSolutionCommandHandler> _logger;
 
-
-    public TryAlgoTaskSolutionCommandHandler(IqpDbContext db, ICurrentUserService currentUser, IValidator<TryAlgoTaskSolutionCommand> validator, ITestRunnerService testRunner, ILogger<SubmitAlgoTaskSolutionCommandHandler> logger)
+    public TryAlgoTaskSolutionCommandHandler(IUnitOfWork unitOfWork, IAlgoTasksRepository algoTasksRepository, ICurrentUserService currentUser, IValidator<TryAlgoTaskSolutionCommand> validator, ITestRunnerService testRunner, ILogger<SubmitAlgoTaskSolutionCommandHandler> logger)
     {
-        _db = db;
+        _unitOfWork = unitOfWork;
+        _algoTasksRepository = algoTasksRepository;
         _currentUser = currentUser;
         _validator = validator;
         _testRunner = testRunner;
@@ -46,10 +49,7 @@ public class TryAlgoTaskSolutionCommandHandler : IRequestHandler<TryAlgoTaskSolu
             throw new ValidationException(EntityName.AlgoTask, commandValidationResult.ToDictionary()); // Maybe make subentity?
         }
         
-        var algoTask = await _db.AlgoTasks
-            .Include(t=>t.CodeSnippets)
-            .ThenInclude(s=>s.Language)
-            .SingleOrDefaultAsync(t=>t.Id == command.AlgoTaskId);
+        var algoTask = await _algoTasksRepository.GetByIdAsync(command.AlgoTaskId, cancellationToken);
 
         if (algoTask is null)
         {

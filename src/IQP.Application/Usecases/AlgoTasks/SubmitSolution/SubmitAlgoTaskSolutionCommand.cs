@@ -1,8 +1,11 @@
 ﻿using FluentValidation;
+using IQP.Application.Services.Users;
 using IQP.Domain;
 using IQP.Domain.Exceptions;
+using IQP.Domain.Repositories;
 using IQP.Infrastructure.CodeRunner;
 using IQP.Infrastructure.Data;
+using IQP.Infrastructure.Repositories;
 using IQP.Infrastructure.Services;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -20,17 +23,19 @@ public record SubmitAlgoTaskSolutionCommand : IRequest<TestRun>
 
 public class SubmitAlgoTaskSolutionCommandHandler : IRequestHandler<SubmitAlgoTaskSolutionCommand, TestRun>
 {
-    private readonly IqpDbContext _db;
+    private readonly IUnitOfWork _unitOfWork;
+    private readonly IAlgoTasksRepository _algoTasksRepository;
+    private readonly IUserService _userService;
     private readonly ICurrentUserService _currentUser;
     private readonly IValidator<SubmitAlgoTaskSolutionCommand> _validator;
     private readonly ITestRunnerService _testRunner;
     private readonly ILogger<SubmitAlgoTaskSolutionCommandHandler> _logger;
 
-    public SubmitAlgoTaskSolutionCommandHandler(IqpDbContext db, ICurrentUserService currentUser,
-        IValidator<SubmitAlgoTaskSolutionCommand> validator, ITestRunnerService testRunner,
-        ILogger<SubmitAlgoTaskSolutionCommandHandler> logger)
+    public SubmitAlgoTaskSolutionCommandHandler(IUnitOfWork unitOfWork, IAlgoTasksRepository algoTasksRepository, IUserService userService, ICurrentUserService currentUser, IValidator<SubmitAlgoTaskSolutionCommand> validator, ITestRunnerService testRunner, ILogger<SubmitAlgoTaskSolutionCommandHandler> logger)
     {
-        _db = db;
+        _unitOfWork = unitOfWork;
+        _algoTasksRepository = algoTasksRepository;
+        _userService = userService;
         _currentUser = currentUser;
         _validator = validator;
         _testRunner = testRunner;
@@ -47,11 +52,7 @@ public class SubmitAlgoTaskSolutionCommandHandler : IRequestHandler<SubmitAlgoTa
                 commandValidationResult.ToDictionary());
         }
 
-        var algoTask = await _db.AlgoTasks
-            .Include(t => t.CodeSnippets)
-            .ThenInclude(s => s.Language)
-            .Include(t => t.PassedBy)
-            .SingleOrDefaultAsync(t => t.Id == command.AlgoTaskId);
+        var algoTask = await _algoTasksRepository.GetByIdAsync(command.AlgoTaskId, cancellationToken);
 
         if (algoTask is null)
         {
@@ -70,7 +71,7 @@ public class SubmitAlgoTaskSolutionCommandHandler : IRequestHandler<SubmitAlgoTa
                 "Specified language is not supported for this task.");
         }
 
-        var user = await _db.Users.FindAsync(_currentUser.UserId.Value);
+        var user = await _userService.GetUserByIdAsync(_currentUser.UserId.Value);
 
         _logger.LogInformation("Running tests on code. Task: {task}, Language: {language}, User: {username}",
             algoTask.Id, specifiedLanguageSnippet.Language.Name, user.UserName);
@@ -85,7 +86,8 @@ public class SubmitAlgoTaskSolutionCommandHandler : IRequestHandler<SubmitAlgoTa
         if (result.Status is TestStatus.Pass && !algoTask.PassedBy.Any(u => u.Id == user.Id))
         {
             algoTask.PassedBy.Add(user);
-            await _db.SaveChangesAsync();
+            _algoTasksRepository.Update(algoTask);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
         }
 
         return result;

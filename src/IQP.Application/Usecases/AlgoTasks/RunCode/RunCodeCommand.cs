@@ -1,6 +1,7 @@
 ﻿using FluentValidation;
 using IQP.Domain;
 using IQP.Domain.Exceptions;
+using IQP.Domain.Repositories;
 using IQP.Infrastructure.CodeRunner;
 using IQP.Infrastructure.Data;
 using MediatR;
@@ -17,13 +18,13 @@ public record RunCodeCommand : IRequest<TestRun>
 
 public class RunCodeCommandHandler : IRequestHandler<RunCodeCommand, TestRun>
 {
-    private readonly IqpDbContext _db;
+    private readonly ICodeLanguagesRepository _codeLanguagesRepository;
     private readonly ITestRunnerService _testRunner;
     private readonly IValidator<RunCodeCommand> _validator;
-
-    public RunCodeCommandHandler(IqpDbContext db, ITestRunnerService testRunner, IValidator<RunCodeCommand> validator)
+    
+    public RunCodeCommandHandler(ICodeLanguagesRepository codeLanguagesRepository, ITestRunnerService testRunner, IValidator<RunCodeCommand> validator)
     {
-        _db = db;
+        _codeLanguagesRepository = codeLanguagesRepository;
         _testRunner = testRunner;
         _validator = validator;
     }
@@ -37,7 +38,7 @@ public class RunCodeCommandHandler : IRequestHandler<RunCodeCommand, TestRun>
             throw new ValidationException(EntityName.AlgoTask, commandValidationResult.ToDictionary());
         }
 
-        var language = await _db.CodeLanguages.FindAsync(command.LanguageId);
+        var language = await _codeLanguagesRepository.GetByIdAsync(command.LanguageId, cancellationToken);
 
         if (language is null)
         {

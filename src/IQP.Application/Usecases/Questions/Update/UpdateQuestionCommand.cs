@@ -1,7 +1,9 @@
 using FluentValidation;
 using IQP.Domain;
 using IQP.Domain.Exceptions;
+using IQP.Domain.Repositories;
 using IQP.Infrastructure.Data;
+using IQP.Infrastructure.Repositories;
 using IQP.Infrastructure.Services;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -20,15 +22,18 @@ public record UpdateQuestionCommand : IRequest<QuestionResponse>
 
 public class UpdateQuestionCommandHandler : IRequestHandler<UpdateQuestionCommand, QuestionResponse>
 {
-    private readonly IqpDbContext _db;
+    private readonly IUnitOfWork _unitOfWork;
+    private readonly IQuestionsRepository _questionsRepository;
+    private readonly ICategoriesRepository _categoriesRepository;
     private readonly ICurrentUserService _currentUser;
     private readonly ILogger<UpdateQuestionCommandHandler> _logger;
     private readonly IValidator<UpdateQuestionCommand> _validator;
-
-
-    public UpdateQuestionCommandHandler(IqpDbContext db, ICurrentUserService currentUser, ILogger<UpdateQuestionCommandHandler> logger, IValidator<UpdateQuestionCommand> validator)
+    
+    public UpdateQuestionCommandHandler(IUnitOfWork unitOfWork, IQuestionsRepository questionsRepository, ICategoriesRepository categoriesRepository, ICurrentUserService currentUser, ILogger<UpdateQuestionCommandHandler> logger, IValidator<UpdateQuestionCommand> validator)
     {
-        _db = db;
+        _unitOfWork = unitOfWork;
+        _questionsRepository = questionsRepository;
+        _categoriesRepository = categoriesRepository;
         _currentUser = currentUser;
         _logger = logger;
         _validator = validator;
@@ -43,7 +48,7 @@ public class UpdateQuestionCommandHandler : IRequestHandler<UpdateQuestionComman
             throw new ValidationException(EntityName.Question, commandValidationResult.ToDictionary());
         }
 
-        var category = await _db.Categories.FindAsync(command.CategoryId);
+        var category = await _categoriesRepository.GetByIdAsync(command.CategoryId, cancellationToken);
 
         if (category is null)
         {
@@ -52,13 +57,7 @@ public class UpdateQuestionCommandHandler : IRequestHandler<UpdateQuestionComman
                 "The category with such id does not exist. Therefore question cannot be updated.");
         }
 
-        var question = await 
-            _db.Questions
-                .Include(q=>q.Category)
-                .Include(q=>q.LikedBy)
-                .Include(q=>q.Commentaries)
-                .Include(q=>q.Creator)
-                .SingleOrDefaultAsync(q => q.Id == command.Id);
+        var question = await _questionsRepository.GetByIdAsync(command.Id, cancellationToken);
         
         if (question is null)
         {
@@ -77,9 +76,8 @@ public class UpdateQuestionCommandHandler : IRequestHandler<UpdateQuestionComman
         question.Description = command.Description;
         question.CategoryId = command.CategoryId;
         
-        _db.Update(question);
-        
-        await _db.SaveChangesAsync();
+        _questionsRepository.Update(question);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
         
         _logger.LogInformation("Question with id {QuestionId} has been updated", question.Id);
 

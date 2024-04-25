@@ -1,6 +1,7 @@
 ﻿using IQP.Application.Contracts.AlgoTaskCategories.Responses;
 using IQP.Domain;
 using IQP.Domain.Exceptions;
+using IQP.Domain.Repositories;
 using IQP.Infrastructure.Data;
 using MediatR;
 
@@ -13,16 +14,16 @@ public record GetAlgoTaskCategoryByIdQuery : IRequest<AlgoTaskCategoryResponse>
 
 public class GetAlgoTaskCategoryByIdQueryHandler : IRequestHandler<GetAlgoTaskCategoryByIdQuery, AlgoTaskCategoryResponse>
 {
-    private readonly IqpDbContext _db;
+    private readonly IAlgoCategoriesRepository _algoCategoriesRepository;
 
-    public GetAlgoTaskCategoryByIdQueryHandler(IqpDbContext db)
+    public GetAlgoTaskCategoryByIdQueryHandler(IAlgoCategoriesRepository algoCategoriesRepository)
     {
-        _db = db;
+        _algoCategoriesRepository = algoCategoriesRepository;
     }
 
     public async Task<AlgoTaskCategoryResponse> Handle(GetAlgoTaskCategoryByIdQuery request, CancellationToken cancellationToken)
     {
-        var category = await _db.AlgoTaskCategories.FindAsync(request.Id);
+        var category = await _algoCategoriesRepository.GetByIdAsync(request.Id, cancellationToken);
 
         if (category is null)
         {

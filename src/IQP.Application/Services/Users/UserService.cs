@@ -66,7 +66,14 @@ public class UserService : IUserService
 
         return user.ToResponse();
     }
-    
+
+    public async Task<User?> GetUserByIdAsync(Guid userId)
+    {
+        var user = await _userManager.FindByIdAsync(userId.ToString());
+
+        return user;
+    }
+
     public async Task<IEnumerable<Claim>?> GetClaims(Guid userId)
     {
         var user = await _userManager.FindByIdAsync(userId.ToString());

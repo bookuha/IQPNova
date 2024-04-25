@@ -5,7 +5,9 @@ using IQP.Application.Services.Users;
 using IQP.Domain;
 using IQP.Domain.Entities;
 using IQP.Domain.Exceptions;
+using IQP.Domain.Repositories;
 using IQP.Infrastructure.Data;
+using IQP.Infrastructure.Repositories;
 using IQP.Infrastructure.Services;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -22,15 +24,16 @@ public record CreateCodeLanguageCommand : IRequest<CodeLanguageResponse>
 
 public class CreateCodeLanguageCommandHandler : IRequestHandler<CreateCodeLanguageCommand, CodeLanguageResponse>
 {
-    private readonly IqpDbContext _db;
+    private readonly IUnitOfWork _unitOfWork;
+    private readonly ICodeLanguagesRepository _codeLanguagesRepository;
     private readonly ICurrentUserService _currentUser;
     private readonly IUserService _userService;
     private readonly IValidator<CreateCodeLanguageCommand> _validator;
 
-
-    public CreateCodeLanguageCommandHandler(IqpDbContext db, ICurrentUserService currentUser, IUserService userService, IValidator<CreateCodeLanguageCommand> validator)
+    public CreateCodeLanguageCommandHandler(IUnitOfWork unitOfWork, ICodeLanguagesRepository codeLanguagesRepository, ICurrentUserService currentUser, IUserService userService, IValidator<CreateCodeLanguageCommand> validator)
     {
-        _db = db;
+        _unitOfWork = unitOfWork;
+        _codeLanguagesRepository = codeLanguagesRepository;
         _currentUser = currentUser;
         _userService = userService;
         _validator = validator;
@@ -50,11 +53,7 @@ public class CreateCodeLanguageCommandHandler : IRequestHandler<CreateCodeLangua
             throw new ValidationException(EntityName.CodeLanguage, validationResult.ToDictionary());
         }
         
-        var languageAlreadyExists = await _db.CodeLanguages
-            .AnyAsync(l => 
-                l.Name == command.Name || 
-                l.Slug == command.Slug || 
-                l.Extension == command.Extension);
+        var languageAlreadyExists = await _codeLanguagesRepository.ExistsAsync(command.Name, command.Slug, command.Extension, cancellationToken);
         
         if (languageAlreadyExists)
         {
@@ -70,8 +69,9 @@ public class CreateCodeLanguageCommandHandler : IRequestHandler<CreateCodeLangua
             Extension = command.Extension
         };
         
-        await _db.CodeLanguages.AddAsync(codeLanguage);
-        await _db.SaveChangesAsync();
+        _codeLanguagesRepository.Add(codeLanguage);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        
         return codeLanguage.ToResponse();
     }
 }

@@ -1,4 +1,5 @@
-﻿using IQP.Infrastructure.Data;
+﻿using IQP.Domain.Repositories;
+using IQP.Infrastructure.Data;
 using IQP.Infrastructure.Services;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -11,31 +12,25 @@ public record GetAlgoTasksQuery : IRequest<IEnumerable<AlgoTaskResponse>>
 
 public class GetAlgoTasksQueryHandler : IRequestHandler<GetAlgoTasksQuery, IEnumerable<AlgoTaskResponse>>
 {
-    private readonly IqpDbContext _db;
+    private readonly IAlgoTasksRepository _algoTasksRepository;
     private readonly ICurrentUserService _currentUser;
-
+    
+    public GetAlgoTasksQueryHandler(IAlgoTasksRepository algoTasksRepository, ICurrentUserService currentUser)
+    {
+        _algoTasksRepository = algoTasksRepository;
+        _currentUser = currentUser;
+    }
 
     public async Task<IEnumerable<AlgoTaskResponse>> Handle(GetAlgoTasksQuery request,
         CancellationToken cancellationToken)
     {
-        var query = _db.AlgoTasks
-            .Include(t => t.AlgoCategory)
-            .Include(t => t.CodeSnippets)
-            .ThenInclude(c => c.Language)
-            .Include(t => t.PassedBy);
-
+        var tasks = await _algoTasksRepository.GetAsync();
         if (!_currentUser.IsAuthenticated)
         {
-            return await query
-                .Select(t => t.ToResponse(Functions.GetTaskSupportedLanguages(t), t.CodeSnippets, false))
-                .AsSplitQuery()
-                .ToListAsync();
+            return tasks.Select(t => t.ToResponse(Functions.GetTaskSupportedLanguages(t), t.CodeSnippets, false));
         }
 
-        return await query
-            .Select(t => t.ToResponse(Functions.GetTaskSupportedLanguages(t), t.CodeSnippets,
-                t.PassedBy.Any(u => u.Id == _currentUser.UserId.Value)))
-            .AsSplitQuery()
-            .ToListAsync();
+        return tasks.Select(t => t.ToResponse(Functions.GetTaskSupportedLanguages(t), t.CodeSnippets,
+            t.PassedBy.Any(u => u.Id == _currentUser.UserId.Value)));
     }
 }

@@ -1,4 +1,5 @@
-﻿using IQP.Infrastructure.Data;
+﻿using IQP.Domain.Repositories;
+using IQP.Infrastructure.Data;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -11,19 +12,17 @@ public record GetCategoriesQuery : IRequest<IEnumerable<CategoryResponse>>
 
 public class GetCategoriesQueryHandler : IRequestHandler<GetCategoriesQuery, IEnumerable<CategoryResponse>>
 {
-    private readonly IqpDbContext _db;
+    private readonly ICategoriesRepository _categoriesRepository;
 
-    public GetCategoriesQueryHandler(IqpDbContext db)
+    public GetCategoriesQueryHandler(ICategoriesRepository categoriesRepository)
     {
-        _db = db;
+        _categoriesRepository = categoriesRepository;
     }
-    
+
     public async Task<IEnumerable<CategoryResponse>> Handle(GetCategoriesQuery request, CancellationToken cancellationToken)
     {
-        var categories = await _db.Categories
-            .Select(c => c.ToResponse())
-            .ToListAsync();
-
-        return categories;
+        var categories = await _categoriesRepository.GetAsync(cancellationToken);
+        
+        return categories.Select(c => c.ToResponse());
     }
 }

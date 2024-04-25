@@ -2,7 +2,9 @@
 using IQP.Application.Services.Users;
 using IQP.Domain;
 using IQP.Domain.Exceptions;
+using IQP.Domain.Repositories;
 using IQP.Infrastructure.Data;
+using IQP.Infrastructure.Repositories;
 using IQP.Infrastructure.Services;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -16,14 +18,15 @@ public record DeleteCodeLanguageCommand : IRequest<CodeLanguageResponse>
 
 public class DeleteCodeLanguageCommandHandler : IRequestHandler<DeleteCodeLanguageCommand, CodeLanguageResponse>
 {
-    private readonly IqpDbContext _db;
+    private readonly IUnitOfWork _unitOfWork;
+    private readonly ICodeLanguagesRepository _codeLanguagesRepository;
     private readonly IUserService _userService;
     private readonly ICurrentUserService _currentUser;
-
-
-    public DeleteCodeLanguageCommandHandler(IqpDbContext db, IUserService userService, ICurrentUserService currentUser)
+    
+    public DeleteCodeLanguageCommandHandler(IUnitOfWork unitOfWork, ICodeLanguagesRepository codeLanguagesRepository, IUserService userService, ICurrentUserService currentUser)
     {
-        _db = db;
+        _unitOfWork = unitOfWork;
+        _codeLanguagesRepository = codeLanguagesRepository;
         _userService = userService;
         _currentUser = currentUser;
     }
@@ -36,7 +39,7 @@ public class DeleteCodeLanguageCommandHandler : IRequestHandler<DeleteCodeLangua
             throw IqpException.NotAdmin();
         }
 
-        var language = await _db.CodeLanguages.FindAsync(request.Id);
+        var language = await _codeLanguagesRepository.GetByIdAsync(request.Id, cancellationToken);
         if (language is null)
         {
             throw new IqpException(
@@ -44,9 +47,7 @@ public class DeleteCodeLanguageCommandHandler : IRequestHandler<DeleteCodeLangua
                 "The code language with such id does not exist.");
         }
 
-        var languageIsUsed = await _db.Database
-            .SqlQueryRaw<Guid>("""SELECT "LanguageId" AS "Value" FROM "AlgoTaskCodeSnippet" """)
-            .AnyAsync(lId => lId == request.Id);
+        var languageIsUsed = await _codeLanguagesRepository.IsInUseAsync(language.Id, cancellationToken);
         if (languageIsUsed)
         {
             throw new IqpException(
@@ -54,8 +55,9 @@ public class DeleteCodeLanguageCommandHandler : IRequestHandler<DeleteCodeLangua
                 "The code language is used in some tasks. Therefore, it cannot be deleted.");
         }
         
-        _db.CodeLanguages.Remove(language);
-        await _db.SaveChangesAsync();
+        _codeLanguagesRepository.Delete(language);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        
         return language.ToResponse();
     }
 }

@@ -1,5 +1,6 @@
 ﻿using IQP.Domain;
 using IQP.Domain.Exceptions;
+using IQP.Domain.Repositories;
 using IQP.Infrastructure.Data;
 using IQP.Infrastructure.Services;
 using MediatR;
@@ -14,25 +15,18 @@ public record GetQuestionByIdQuery : IRequest<QuestionResponse>
 
 public class GetQuestionByIdQueryHandler : IRequestHandler<GetQuestionByIdQuery, QuestionResponse>
 {
-    private readonly IqpDbContext _db;
+    private readonly IQuestionsRepository _questionsRepository;
     private readonly ICurrentUserService _currentUser;
-
-
-    public GetQuestionByIdQueryHandler(IqpDbContext db, ICurrentUserService currentUser)
+    
+    public GetQuestionByIdQueryHandler(IQuestionsRepository questionsRepository, ICurrentUserService currentUser)
     {
-        _db = db;
+        _questionsRepository = questionsRepository;
         _currentUser = currentUser;
     }
 
     public async Task<QuestionResponse> Handle(GetQuestionByIdQuery request, CancellationToken cancellationToken)
     {
-        var question = await 
-            _db.Questions
-                .Include(q=>q.Category)        
-                .Include(q=>q.LikedBy)
-                .Include(q=>q.Commentaries)
-                .Include(q=>q.Creator)
-                .SingleOrDefaultAsync(q => q.Id == request.Id);
+        var question = await _questionsRepository.GetByIdAsync(request.Id, cancellationToken);
 
         if (question is null)
         {
