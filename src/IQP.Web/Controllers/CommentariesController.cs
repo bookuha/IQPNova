@@ -1,8 +1,8 @@
-using IQP.Application.Contracts.Commentaries;
-using IQP.Application.Contracts.Commentaries.Commands;
-using IQP.Application.Services;
-using IQP.Web.ViewModels;
+using IQP.Application.Usecases.Commentaries;
+using IQP.Application.Usecases.Commentaries.Create;
+using IQP.Application.Usecases.Commentaries.GetByQuestionId;
 using IQP.Web.ViewModels.Questions;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,11 +12,11 @@ namespace IQP.Web.Controllers;
 [ApiController]
 public class CommentariesController : ControllerBase
 {
-    private readonly ICommentariesService _commentariesService;
+    private readonly IMediator _mediator;
 
-    public CommentariesController(ICommentariesService commentariesService)
+    public CommentariesController(IMediator mediator)
     {
-        _commentariesService = commentariesService;
+        _mediator = mediator;
     }
 
     [Authorize]
@@ -25,7 +25,7 @@ public class CommentariesController : ControllerBase
     {
         var command = new CreateCommentaryCommand {QuestionId = questionId, Content = request.Content, ReplyToId = request.ReplyToId};
 
-        var response = await _commentariesService.CreateCommentary(command);
+        var response = await _mediator.Send(command);
 
         return Created($"api/commentaries/{response.Id}", response);
     }
@@ -34,7 +34,7 @@ public class CommentariesController : ControllerBase
     [HttpGet("questions/{questionId}/commentaries")]
     public async Task<ActionResult<IEnumerable<CommentaryResponse>>> GetCommentariesByQuestionId(Guid questionId)
     {
-        var result = await _commentariesService.GetCommentariesByQuestionId(questionId);
+        var result = await _mediator.Send(new GetCommentariesByQuestionIdQuery {QuestionId = questionId});
 
         return Ok(result);
     }
@@ -43,20 +43,14 @@ public class CommentariesController : ControllerBase
     [HttpPut("commentaries/{id}")]
     public async Task<ActionResult<CommentaryResponse>> UpdateCommentary(Guid id, [FromBody] UpdateCommentaryRequest request)
     {
-        var command = new UpdateCommentaryCommand {Id = id, Content = request.Content};
-
-        var result = await _commentariesService.UpdateCommentary(command);
-
-        return Ok(result);
+        throw new NotImplementedException();
     }
     
     [Authorize]
     [HttpDelete("commentaries/{id}")]
     public async Task<ActionResult<CommentaryResponse>> DeleteCommentary(Guid id)
     {
-        var result = await _commentariesService.DeleteCommentary(id);
-
-        return Ok(result);
+        throw new NotImplementedException();
     }
     
 }

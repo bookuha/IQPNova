@@ -1,6 +1,6 @@
 ﻿using FluentValidation;
-using IQP.Application.Services;
-using IQP.Application.Services.Validators;
+using IQP.Application.Services.Users;
+using IQP.Application.Usecases.Categories.Create;
 
 namespace IQP.Web.Modules;
 
@@ -8,13 +8,8 @@ public static partial class ServiceCollectionExtensions
 {
     public static IServiceCollection AddApplicationServices(this IServiceCollection services, IConfiguration config)
     {
-        services.AddTransient<ICategoriesService, CategoriesService>();
-        services.AddTransient<IAlgoTaskCategoriesService, AlgoTaskCategoriesService>();
-        services.AddTransient<ICodeLanguagesService, CodeLanguagesService>();
-        services.AddTransient<IQuestionsService, QuestionsService>();
-        services.AddTransient<ICommentariesService, CommentariesService>();
-        services.AddTransient<IAlgoTasksService, AlgoTasksService>();
         services.AddTransient<IUserService, UserService>();
+        services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<CreateCategoryCommand>());
         services.AddValidatorsFromAssemblyContaining<CreateCategoryCommandValidator>();
         
         return services;

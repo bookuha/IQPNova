@@ -1,8 +1,12 @@
-using IQP.Application.Contracts.Questions.Commands;
-using IQP.Application.Contracts.Questions.Responses;
-using IQP.Application.Services;
-using IQP.Web.ViewModels;
+using IQP.Application.Usecases.Questions;
+using IQP.Application.Usecases.Questions.Create;
+using IQP.Application.Usecases.Questions.Delete;
+using IQP.Application.Usecases.Questions.Get;
+using IQP.Application.Usecases.Questions.GetById;
+using IQP.Application.Usecases.Questions.Like;
+using IQP.Application.Usecases.Questions.Update;
 using IQP.Web.ViewModels.Questions;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,11 +16,11 @@ namespace IQP.Web.Controllers;
 [ApiController]
 public class QuestionsController : ControllerBase
 {
-    private readonly IQuestionsService _questionsService;
+    private readonly IMediator _mediator;
 
-    public QuestionsController(IQuestionsService questionsService)
+    public QuestionsController(IMediator mediator)
     {
-        _questionsService = questionsService;
+        _mediator = mediator;
     }
 
     [Authorize]
@@ -25,7 +29,7 @@ public class QuestionsController : ControllerBase
     {
         var command = new CreateQuestionCommand {Title = request.Title, Description = request.Description, CategoryId = request.CategoryId};
 
-        var response = await _questionsService.CreateQuestion(command);
+        var response = await _mediator.Send(command);
 
         return Created($"api/questions/{response.Id}", response);
     }
@@ -33,7 +37,7 @@ public class QuestionsController : ControllerBase
     [HttpGet("{id}")]
     public async Task<ActionResult<QuestionResponse>> GetQuestionById(Guid id)
     {
-        var result = await _questionsService.GetQuestionById(id);
+        var result = await _mediator.Send(new GetQuestionByIdQuery {Id = id});
 
         return Ok(result);
     }
@@ -41,7 +45,7 @@ public class QuestionsController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<IEnumerable<QuestionResponse>>> GetQuestions()
     {
-        var result = await _questionsService.GetQuestions();
+        var result = await _mediator.Send(new GetQuestionsQuery());
 
         return Ok(result);
     }
@@ -52,7 +56,7 @@ public class QuestionsController : ControllerBase
     {
         var command = new UpdateQuestionCommand {Id = id, Title = request.Title, Description = request.Description, CategoryId = request.CategoryId};
 
-        var result = await _questionsService.UpdateQuestion(command);
+        var result = await _mediator.Send(command);
 
         return Ok(result);
     }
@@ -61,7 +65,7 @@ public class QuestionsController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<ActionResult<QuestionResponse>> DeleteQuestion(Guid id)
     {
-        var result = await _questionsService.DeleteQuestion(id);
+        var result = await _mediator.Send(new DeleteQuestionCommand {Id = id});
 
         return Ok(result);
     }
@@ -70,7 +74,7 @@ public class QuestionsController : ControllerBase
     [HttpPut("{id}/likes")]
     public async Task<ActionResult<QuestionResponse>> LikeQuestion(Guid id)
     {
-        var result = await _questionsService.LikeQuestion(id);
+        var result = await _mediator.Send(new LikeQuestionCommand {Id = id});
 
         return Ok(result);
     }

@@ -1,8 +1,13 @@
 ﻿using IQP.Application.Contracts.CodeLanguages;
-using IQP.Application.Contracts.CodeLanguages.Commands;
 using IQP.Application.Contracts.CodeLanguages.Responses;
 using IQP.Application.Services;
+using IQP.Application.Usecases.CodeLanguages.Create;
+using IQP.Application.Usecases.CodeLanguages.Delete;
+using IQP.Application.Usecases.CodeLanguages.Get;
+using IQP.Application.Usecases.CodeLanguages.GetById;
+using IQP.Application.Usecases.CodeLanguages.Update;
 using IQP.Web.ViewModels.CodeLanguages;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,11 +16,11 @@ namespace IQP.Web.Controllers;
 [Route("api/code-languages")]
 public class CodeLanguagesController : ControllerBase
 {
-    private readonly ICodeLanguagesService _codeLanguagesService;
+    private readonly IMediator _mediator;
 
-    public CodeLanguagesController(ICodeLanguagesService codeLanguagesService)
+    public CodeLanguagesController(IMediator mediator)
     {
-        _codeLanguagesService = codeLanguagesService;
+        _mediator = mediator;
     }
 
     [Authorize(Policy = "AdminOnly")]
@@ -24,7 +29,7 @@ public class CodeLanguagesController : ControllerBase
     {
         var command = new CreateCodeLanguageCommand {Name = request.Name, Slug = request.Slug, Extension = request.Extension};
 
-        var response = await _codeLanguagesService.CreateLanguage(command);
+        var response = await _mediator.Send(command);
 
         return Created($"api/code-languages/{response.Id}", response);
     }
@@ -32,15 +37,15 @@ public class CodeLanguagesController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<IEnumerable<CodeLanguageResponse>>> GetLanguages()
     {
-        var response = await _codeLanguagesService.GetLanguages();
-
+        var response = await _mediator.Send(new GetCodeLanguagesQuery());
+        
         return Ok(response);
     }
     
     [HttpGet("{id}")]
     public async Task<ActionResult<CodeLanguageResponse>> GetLanguageById(Guid id)
     {
-        var response = await _codeLanguagesService.GetLanguage(id);
+        var response = await _mediator.Send(new GetCodeLanguageByIdQuery {Id = id});
 
         return Ok(response);
     }
@@ -51,7 +56,7 @@ public class CodeLanguagesController : ControllerBase
     {
         var command = new UpdateCodeLanguageCommand {Id = id, Name = request.Name, Slug = request.Slug, Extension = request.Extension};
 
-        var response = await _codeLanguagesService.UpdateLanguage(command);
+        var response = await _mediator.Send(command);
 
         return Ok(response);
     }
@@ -60,7 +65,7 @@ public class CodeLanguagesController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<ActionResult<CodeLanguageResponse>> DeleteLanguage(Guid id)
     {
-       return await _codeLanguagesService.DeleteLanguage(id);
+       return await _mediator.Send(new DeleteCodeLanguageCommand {Id = id});
     }
     
 

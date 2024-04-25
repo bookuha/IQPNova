@@ -1,8 +1,13 @@
 ﻿using FluentValidation;
 using FluentValidation.Results;
 using IQP.Application.Contracts.AlgoTasks.Commands;
-using IQP.Application.Contracts.AlgoTasks.Utility;
 using IQP.Application.Services;
+using IQP.Application.Services.Users;
+using IQP.Application.Usecases.AlgoTasks;
+using IQP.Application.Usecases.AlgoTasks.Create;
+using IQP.Application.Usecases.AlgoTasks.SubmitSolution;
+using IQP.Application.Usecases.AlgoTasks.Translate;
+using IQP.Application.Usecases.AlgoTasks.Update;
 using IQP.Domain.Entities;
 using IQP.Domain.Exceptions;
 using IQP.Infrastructure.CodeRunner;
@@ -17,36 +22,36 @@ namespace IQP.Application.UnitTests.Services;
 [TestFixture]
 public class AlgoTaskServiceTests
 {
-    private Mock<IqpDbContext> _dbContext;
-    private Mock<ITestRunnerService> _testRunner;
-    private Mock<ICurrentUserService> _currentUser;
-    private Mock<IValidator<RunTestsOnCodeCommand>> _runTestsOnCodeCommandValidator;
-    private Mock<IValidator<SubmitAlgoTaskSolutionCommand>> _submitCodeCommandValidator;
-    private Mock<IValidator<CreateAlgoTaskCommand>> _createAlgoTaskCommandValidator;
-    private Mock<IValidator<UpdateAlgoTaskCommand>> _updateAlgoTaskCommandValidator;
-    private Mock<IValidator<AddNewLanguageToAlgoTaskCommand>> _addNewLanguageToAlgoTaskCommandValidator;
-    private Mock<ILogger<AlgoTasksService>> _logger;
-    private Mock<IUserService> _userService;
+    private Mock<IqpDbContext> _dbContextMock;
+    private Mock<ITestRunnerService> _testRunnerMock;
+    private Mock<ICurrentUserService> _currentUserMock;
+    private Mock<IValidator<RunTestsOnCodeCommand>> _runTestsOnCodeCommandValidatorMock;
+    private Mock<IValidator<SubmitAlgoTaskSolutionCommand>> _submitCodeCommandValidatorMock;
+    private Mock<IValidator<CreateAlgoTaskCommand>> _createAlgoTaskCommandValidatorMock;
+    private Mock<IValidator<UpdateAlgoTaskCommand>> _updateAlgoTaskCommandValidatorMock;
+    private Mock<IValidator<TranslateAlgoTaskCommand>> _addNewLanguageToAlgoTaskCommandValidatorMock;
+    private Mock<ILogger<AlgoTasksService>> _loggerMock;
+    private Mock<IUserService> _userServiceMock;
     private AlgoTasksService _algoTaskService;
 
     [SetUp]
     public void Setup()
     {
-        _dbContext = new Mock<IqpDbContext>();
-        _testRunner = new Mock<ITestRunnerService>();
-        _currentUser = new Mock<ICurrentUserService>();
-        _runTestsOnCodeCommandValidator = new Mock<IValidator<RunTestsOnCodeCommand>>();
-        _submitCodeCommandValidator = new Mock<IValidator<SubmitAlgoTaskSolutionCommand>>();
-        _createAlgoTaskCommandValidator = new Mock<IValidator<CreateAlgoTaskCommand>>();
-        _updateAlgoTaskCommandValidator = new Mock<IValidator<UpdateAlgoTaskCommand>>();
-        _addNewLanguageToAlgoTaskCommandValidator = new Mock<IValidator<AddNewLanguageToAlgoTaskCommand>>();
-        _logger = new Mock<ILogger<AlgoTasksService>>();
-        _userService = new Mock<IUserService>();
+        _dbContextMock = new Mock<IqpDbContext>();
+        _testRunnerMock = new Mock<ITestRunnerService>();
+        _currentUserMock = new Mock<ICurrentUserService>();
+        _runTestsOnCodeCommandValidatorMock = new Mock<IValidator<RunTestsOnCodeCommand>>();
+        _submitCodeCommandValidatorMock = new Mock<IValidator<SubmitAlgoTaskSolutionCommand>>();
+        _createAlgoTaskCommandValidatorMock = new Mock<IValidator<CreateAlgoTaskCommand>>();
+        _updateAlgoTaskCommandValidatorMock = new Mock<IValidator<UpdateAlgoTaskCommand>>();
+        _addNewLanguageToAlgoTaskCommandValidatorMock = new Mock<IValidator<TranslateAlgoTaskCommand>>();
+        _loggerMock = new Mock<ILogger<AlgoTasksService>>();
+        _userServiceMock = new Mock<IUserService>();
 
-        _algoTaskService = new AlgoTasksService(_dbContext.Object, _testRunner.Object, _currentUser.Object,
-            _runTestsOnCodeCommandValidator.Object, _submitCodeCommandValidator.Object,
-            _createAlgoTaskCommandValidator.Object, _updateAlgoTaskCommandValidator.Object,
-            _addNewLanguageToAlgoTaskCommandValidator.Object, _logger.Object, _userService.Object);
+        _algoTaskService = new AlgoTasksService(_dbContextMock.Object, _testRunnerMock.Object, _currentUserMock.Object,
+            _runTestsOnCodeCommandValidatorMock.Object, _submitCodeCommandValidatorMock.Object,
+            _createAlgoTaskCommandValidatorMock.Object, _updateAlgoTaskCommandValidatorMock.Object,
+            _addNewLanguageToAlgoTaskCommandValidatorMock.Object, _loggerMock.Object, _userServiceMock.Object);
     }
 
     [Test]
@@ -67,8 +72,8 @@ public class AlgoTaskServiceTests
             }
         };
 
-        _currentUser.Setup(x => x.UserId).Returns(Guid.NewGuid());
-        _userService.Setup(x => x.IsUserAdmin(It.IsAny<Guid>())).ReturnsAsync(false);
+        _currentUserMock.Setup(x => x.UserId).Returns(Guid.NewGuid());
+        _userServiceMock.Setup(x => x.IsUserAdmin(It.IsAny<Guid>())).ReturnsAsync(false);
 
         // Act & Assert
         Assert.ThrowsAsync(Is.TypeOf<IqpException>()
@@ -97,11 +102,11 @@ public class AlgoTaskServiceTests
             }
         };
 
-        _currentUser.Setup(x => x.UserId).Returns(Guid.NewGuid());
-        _userService.Setup(x => x.IsUserAdmin(It.IsAny<Guid>())).ReturnsAsync(true);
-        _createAlgoTaskCommandValidator.Setup(x => x.Validate(It.IsAny<CreateAlgoTaskCommand>()))
+        _currentUserMock.Setup(x => x.UserId).Returns(Guid.NewGuid());
+        _userServiceMock.Setup(x => x.IsUserAdmin(It.IsAny<Guid>())).ReturnsAsync(true);
+        _createAlgoTaskCommandValidatorMock.Setup(x => x.Validate(It.IsAny<CreateAlgoTaskCommand>()))
             .Returns(new ValidationResult());
-        _dbContext.Setup(x => x.AlgoTasks).ReturnsDbSet(new List<AlgoTask>
+        _dbContextMock.Setup(x => x.AlgoTasks).ReturnsDbSet(new List<AlgoTask>
         {
             new()
             {

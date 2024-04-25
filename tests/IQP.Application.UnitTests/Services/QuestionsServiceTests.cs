@@ -1,6 +1,7 @@
 ﻿using FluentValidation;
 using IQP.Application.Contracts.Questions.Commands;
 using IQP.Application.Services;
+using IQP.Application.Usecases.Questions.Update;
 using IQP.Domain.Entities;
 using IQP.Domain.Exceptions;
 using IQP.Infrastructure.Data;
