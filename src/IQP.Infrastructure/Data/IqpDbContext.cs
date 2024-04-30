@@ -41,6 +41,5 @@ public class IqpDbContext : IdentityDbContext<User, IdentityRole<Guid>, Guid>
         modelBuilder.ApplyConfiguration(new CodeLanguageConfiguration());
         modelBuilder.ApplyConfiguration(new AlgoTaskCodeSnippetConfiguration());
         // Seed code languages, algo task category and a simple algo task
-        IqpDataSeeder.Seed(modelBuilder);
     }
 }

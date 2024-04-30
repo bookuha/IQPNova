@@ -4,6 +4,7 @@ using Moq;
 namespace IQP.Infrastructure.CodeRunner.IntegrationTests;
 
 [TestFixture]
+[Category("IntegrationTests")]
 public class FileSystemToDockerTestRunnerTests
 {
     private readonly IFileSolutionTestRunner _fileSolutionTestRunner = new FileSystemToDockerTestRunner(new Mock<ILogger<FileSystemToDockerTestRunner>>().Object);
