@@ -29,7 +29,7 @@ services:
   frontend:
     image: iqp-frontend
     ports:
-      - "3000:3000"
+      - "5000:5000"
     environment:
       - VITE_API_URL=http://localhost
     networks:
@@ -47,6 +47,29 @@ services:
       - ./data:/var/lib/postgresql/data
     networks:
       - dev
+
+  prometheus:
+    image: ubuntu/prometheus
+    container_name: dev_prometheus
+    ports:
+      - "30090:9090"
+    environment:
+      - TZ=UTC
+    volumes:
+      - ./prom/prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - dev
+
+  grafana:
+    image: grafana/grafana
+    container_name: dev_grafana
+    ports:
+      - "30091:3000"
+    volumes:
+      - ./grafana-data/data:/var/lib/grafana
+    networks:
+      - dev
+      
 volumes:
   shared:
     name: shared

@@ -3,6 +3,9 @@
 
 bin/
 obj/
+grafana-data/data/
+data/
+
 
 [Oo]bj
 [Bb]in

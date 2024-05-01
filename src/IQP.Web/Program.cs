@@ -3,6 +3,7 @@ using IQP.Infrastructure.Services;
 using IQP.Web.Middlewares;
 using IQP.Web.Modules;
 using Microsoft.EntityFrameworkCore;
+using Prometheus;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -48,10 +49,14 @@ app.UseSwaggerUI();
 
 app.UseCors("AllowAll");
 
+
 app.UseAuthorization();
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 app.MapControllers();
+
+app.UseHttpMetrics();
+app.MapMetrics();
 
 app.Run();
