@@ -13,7 +13,6 @@ services:
       - "443:443"
     environment:
       - PostgresConnectionString=Server=db;Port=5432;Database=iqp;User Id=postgres;Password=password;Include Error Detail=True;IntegratedSecurity=True;
-      - JWT__Secret=tyt_byv_andrii-token_super_secret_key
       - TestRunner__SamplesFolderPath=/samples
       - TestRunner__SolutionsFolderPath=/solutions
     volumes:
