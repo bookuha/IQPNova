@@ -18,6 +18,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\IQP.Domain\IQP.Domain.csproj" />
+      <ProjectReference Include="..\IQP.Shared\IQP.Shared.csproj" />
     </ItemGroup>
 
 </Project>

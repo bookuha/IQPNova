@@ -1,0 +1,10 @@
+{
+  "status" : "fail",
+  "tests" : [ {
+    "name" : "testHelloWorld",
+    "test_code" : "@Test\npublic void testHelloWorld() {\n    assertEquals(\"Hello, world!\", Solution.helloWorld());\n}",
+    "status" : "fail",
+    "message" : "Message: expected:<Hello, [world]!> but was:<Hello, [Guys]!>\nException: org.junit.ComparisonFailure: expected:<Hello, [world]!> but was:<Hello, [Guys]!>\n\tat org.junit.Assert.assertEquals(Assert.java:117)\n\tat org.junit.Assert.assertEquals(Assert.java:146)\n\tat SolutionTests.testHelloWorld(SolutionTests.java:12)\n\tat java.base/java.lang.reflect.Method.invoke(Method.java:580)\n"
+  } ],
+  "version" : 3
+}

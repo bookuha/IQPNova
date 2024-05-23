@@ -3,6 +3,9 @@
 
 bin/
 obj/
+grafana-data/data/
+data/   
+
 
 [Oo]bj
 [Bb]in
@@ -17,3 +20,12 @@ obj/
 _ReSharper.*
 *.resharper
 Ankh.NoLoad
+
+# Ignore .terraform directory in terraform/digital_ocean
+terraform/digital_ocean/.terraform/
+
+# Ignore .tfstate, .hcl, .tfstate.backup, and .tfvars files in terraform/digital_ocean
+terraform/digital_ocean/*.tfstate
+terraform/digital_ocean/*.hcl
+terraform/digital_ocean/*.tfstate.backup
+terraform/digital_ocean/*.tfvars

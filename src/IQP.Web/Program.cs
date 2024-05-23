@@ -1,22 +1,9 @@
-using System.Reflection;
-using System.Text;
-using FluentValidation;
-using IQP.Application.Services;
-using IQP.Application.Services.Validators;
-using IQP.Domain.Entities;
-using IQP.Infrastructure.CodeRunner;
 using IQP.Infrastructure.Data;
 using IQP.Infrastructure.Services;
 using IQP.Web.Middlewares;
-using IQP.Web.Middlewares.Auth;
 using IQP.Web.Modules;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
+using Prometheus;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -62,10 +49,14 @@ app.UseSwaggerUI();
 
 app.UseCors("AllowAll");
 
+
 app.UseAuthorization();
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 app.MapControllers();
+
+app.UseHttpMetrics();
+app.MapMetrics();
 
 app.Run();

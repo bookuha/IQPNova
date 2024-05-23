@@ -1,0 +1,34 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="443a9670-a93e-4bef-9511-2d2f0e2ff682" name="@510210ff5acb 2024-04-22 15:38:40" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2024-04-22T15:38:40.8567276+00:00" queuing="2024-04-22T15:38:40.8567277+00:00" start="2024-04-22T15:38:39.3438074+00:00" finish="2024-04-22T15:38:40.8744115+00:00" />
+  <TestSettings name="default" id="6c7a569a-14c9-4a48-b3fa-7552c7f9f982">
+    <Deployment runDeploymentRoot="_510210ff5acb_2024-04-22_15_38_40" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="7490ca3b-a328-4088-ae0b-19cd13e998d1" testId="9de74cfc-d073-ee1c-a267-3a18892dac8b" testName="SolutionTests.helloWorld returns Hello, world!" computerName="510210ff5acb" duration="00:00:00.0029990" startTime="2024-04-22T15:38:40.7155374+00:00" endTime="2024-04-22T15:38:40.7155748+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="7490ca3b-a328-4088-ae0b-19cd13e998d1" />
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="SolutionTests.helloWorld returns Hello, world!" storage="/solution/bin/debug/net7.0/solution.dll" id="9de74cfc-d073-ee1c-a267-3a18892dac8b">
+      <Execution id="7490ca3b-a328-4088-ae0b-19cd13e998d1" />
+      <TestMethod codeBase="/solution/bin/Debug/net7.0/Solution.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="SolutionTests" name="helloWorld returns Hello, world!" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="9de74cfc-d073-ee1c-a267-3a18892dac8b" executionId="7490ca3b-a328-4088-ae0b-19cd13e998d1" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="1" executed="1" passed="1" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v2.4.3+1b45f5407b (64-bit .NET 7.0.11)
+[xUnit.net 00:00:00.66]   Discovering: Solution
+[xUnit.net 00:00:00.70]   Discovered:  Solution
+[xUnit.net 00:00:00.70]   Starting:    Solution
+[xUnit.net 00:00:00.77]   Finished:    Solution
+</StdOut>
+    </Output>
+  </ResultSummary>
+</TestRun>

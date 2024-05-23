@@ -1,0 +1,6 @@
+{
+  "version": 3,
+  "status": "error",
+  "message": "/solution/Solution.fs(4,5): error FS0039: The value or constructor \u0027COMPILE\u0027 is not defined. Maybe you want one of the following:\u001D   CompilerServices\u001D   compare\u001D   CompiledNameAttribute\u001D   CompilerMessageAttribute",
+  "tests": []
+}

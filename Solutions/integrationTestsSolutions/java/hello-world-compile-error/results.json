@@ -1,0 +1,6 @@
+{
+  "status" : "error",
+  "message" : "./src/main/java/Solution.java:3: error: ';' expected\n        COMPILE ERROR\n                     ^",
+  "tests" : [ ],
+  "version" : 3
+}

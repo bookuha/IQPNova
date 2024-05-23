@@ -1,4 +1,4 @@
-using IQP.Application.Contracts.Users.Responses;
+using IQP.Application.Services.Users;
 
 namespace IQP.Web.ViewModels.Auth;
 

@@ -1,0 +1,9 @@
+{
+  "status" : "pass",
+  "tests" : [ {
+    "name" : "testHelloWorld",
+    "test_code" : "@Test\npublic void testHelloWorld() {\n    assertEquals(\"Hello, world!\", Solution.helloWorld());\n}",
+    "status" : "pass"
+  } ],
+  "version" : 3
+}

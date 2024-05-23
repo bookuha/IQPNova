@@ -1,10 +1,16 @@
-﻿using IQP.Application.Contracts.AlgoTasks.Commands;
-using IQP.Application.Contracts.AlgoTasks.Responses;
-using IQP.Application.Contracts.AlgoTasks.Utility;
-using IQP.Application.Services;
+﻿using System.ComponentModel.DataAnnotations;
+using IQP.Application.Usecases.AlgoTasks;
+using IQP.Application.Usecases.AlgoTasks.Create;
+using IQP.Application.Usecases.AlgoTasks.Get;
+using IQP.Application.Usecases.AlgoTasks.GetById;
+using IQP.Application.Usecases.AlgoTasks.RunCode;
+using IQP.Application.Usecases.AlgoTasks.SubmitSolution;
+using IQP.Application.Usecases.AlgoTasks.Translate;
+using IQP.Application.Usecases.AlgoTasks.TrySolution;
+using IQP.Application.Usecases.AlgoTasks.Update;
 using IQP.Infrastructure.CodeRunner;
-using IQP.Web.ViewModels;
 using IQP.Web.ViewModels.AlgoTasks;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,13 +19,14 @@ namespace IQP.Web.Controllers;
 [Route("api/algo-tasks")]
 public class AlgoTasksController : ControllerBase
 {
-    private readonly IAlgoTasksService _algoTasksService;
-    
-    public AlgoTasksController(IAlgoTasksService algoTasksService)
+    private readonly IMediator _mediator;
+
+    public AlgoTasksController(IMediator mediator)
     {
-        _algoTasksService = algoTasksService;
+        _mediator = mediator;
     }
-    
+
+
     [Authorize(Policy = "AdminOnly")]
     [HttpPost]
     public async Task<ActionResult<AlgoTaskResponse>> CreateAlgoTask([FromBody] CreateAlgoTaskRequest request)
@@ -38,7 +45,7 @@ public class AlgoTasksController : ControllerBase
             }
         };
         
-        var result = await _algoTasksService.CreateAlgoTask(command);
+        var result = await _mediator.Send(command);
         
         return Ok(result);
     }
@@ -47,7 +54,7 @@ public class AlgoTasksController : ControllerBase
     [HttpPost("{algoTaskId:guid}/languages")]
     public async Task<ActionResult<AlgoTaskResponse>> AddLanguage(Guid algoTaskId, [FromBody] InitialCodeSnippet request)
     {
-        var command = new AddNewLanguageToAlgoTaskCommand
+        var command = new TranslateAlgoTaskCommand
         {
             AlgoTaskId = algoTaskId,
             InitialCodeSnippet = new CodeSnippet
@@ -59,7 +66,7 @@ public class AlgoTasksController : ControllerBase
             }
         };
         
-        var result = await _algoTasksService.AddNewLanguageToAlgoTask(command);
+        var result = await _mediator.Send(command);
         
         return Ok(result);
     }
@@ -70,45 +77,47 @@ public class AlgoTasksController : ControllerBase
     {
         var command = new SubmitAlgoTaskSolutionCommand{ Code = request.Code, LanguageId = request.LanguageId, AlgoTaskId = algoTaskId };
         
-        var result = await _algoTasksService.SubmitAlgoTaskSolution(command);
+        var result = await _mediator.Send(command);
         
         return Ok(result);
     }
     
     [Authorize]
-    [HttpPost("{algoTaskId:guid}/test")]
-    public async Task<ActionResult<TestRun>> TestsAlgoTaskSolution(Guid algoTaskId, [FromBody] SubmitCodeRequest request) 
+    [HttpPost("{algoTaskId:guid}/try")]
+    public async Task<ActionResult<TestRun>> TryAlgoTaskSolution(Guid algoTaskId, [FromBody] SubmitCodeRequest request) 
     {
-        var command = new SubmitAlgoTaskSolutionCommand{ Code = request.Code, LanguageId = request.LanguageId, AlgoTaskId = algoTaskId };
+        var command = new TryAlgoTaskSolutionCommand{ Code = request.Code, LanguageId = request.LanguageId, AlgoTaskId = algoTaskId };
         
-        var result = await _algoTasksService.TestAlgoTaskSolution(command);
+        var result = await _mediator.Send(command);
         
         return Ok(result);
     }
     
     [Authorize]
-    [HttpPost("test")]
+    [HttpPost("run-code")]
     public async Task<ActionResult<TestRun>> RunTestsOnCode([FromBody] RunTestsOnCodeRequest request)
     {
-        var command = new RunTestsOnCodeCommand{ LanguageId = request.LanguageId, Code = request.Code, Tests = request.Tests };
+        var command = new RunCodeCommand{ LanguageId = request.LanguageId, Code = request.Code, Tests = request.Tests };
         
-        var result = await _algoTasksService.RunTestsOnCode(command);
+        var result = await _mediator.Send(command);
         
         return Ok(result);
     }
     
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<AlgoTaskResponse>>> GetAlgoTasks()
+    public async Task<ActionResult<IEnumerable<AlgoTaskResponse>>> GetAlgoTasks(string? searchTerm, Guid? algoCategoryId,
+        string? sortColumn, string? sortOrder, [Range(1, int.MaxValue)] int page = 1, [Range(1,30)] int pageSize = 15)
     {
-        var result = await _algoTasksService.GetAlgoTasks();
-        
+        var result =
+            await _mediator.Send(new GetAlgoTasksQuery(searchTerm, algoCategoryId, sortColumn, sortOrder, page, pageSize));
+
         return Ok(result);
     }
     
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<AlgoTaskResponse>> GetAlgoTaskById(Guid id)
     {
-        var result = await _algoTasksService.GetAlgoTaskById(id);
+        var result = await _mediator.Send(new GetAlgoTaskByIdQuery{ Id = id });
         
         return Ok(result);
     }
@@ -125,7 +134,7 @@ public class AlgoTasksController : ControllerBase
             AlgoCategoryId = request.AlgoCategoryId
         };
         
-        var result = await _algoTasksService.UpdateAlgoTask(command);
+        var result = await _mediator.Send(command);
         
         return Ok(result);
     }

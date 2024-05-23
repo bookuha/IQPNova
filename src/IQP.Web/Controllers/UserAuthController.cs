@@ -2,9 +2,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Authentication;
 using System.Security.Claims;
 using System.Text;
-using IQP.Application.Contracts.Users.Commands;
-using IQP.Application.Services;
-using IQP.Web.ViewModels;
+using IQP.Application.Services.Users;
 using IQP.Web.ViewModels.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -27,9 +25,9 @@ public class UserAuthController : ControllerBase
     
     [HttpPost]
     [Route("register")]
-    public async Task<ActionResult<AuthResult>> Register([FromBody] CreateUserCommand command) // TODO: Change to request
+    public async Task<ActionResult<AuthResult>> Register([FromBody] RegisterRequest request) 
     {
-        var user = await _usersService.Register(command);
+        var user = await _usersService.Register(request.Nickname, request.Password, request.Email, request.Status);
         var token = await GenerateToken(user.Id);
         
         return Ok(new AuthResult
@@ -42,7 +40,7 @@ public class UserAuthController : ControllerBase
     
     [HttpPost]
     [Route("login")]
-    public async Task<ActionResult<AuthResult>> Login([FromBody] LoginRequest request) // TODO: Change to request
+    public async Task<ActionResult<AuthResult>> Login([FromBody] LoginRequest request)
     {
         var user = await _usersService.Login(request.Nickname, request.Password);
         var token = await GenerateToken(user.Id);
