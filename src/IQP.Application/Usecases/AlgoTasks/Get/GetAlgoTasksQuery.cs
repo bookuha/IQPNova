@@ -1,16 +1,21 @@
 ﻿using IQP.Domain.Repositories;
 using IQP.Infrastructure.Data;
 using IQP.Infrastructure.Services;
+using IQP.Shared;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
 namespace IQP.Application.Usecases.AlgoTasks.Get;
 
-public record GetAlgoTasksQuery : IRequest<IEnumerable<AlgoTaskResponse>>
-{
-}
+public record GetAlgoTasksQuery(
+    string? SearchTerm,
+    Guid? AlgoCategoryId,
+    string? SortColumn,
+    string? SortOrder,
+    int Page,
+    int PageSize) : IRequest<PagedList<AlgoTaskResponse>>;
 
-public class GetAlgoTasksQueryHandler : IRequestHandler<GetAlgoTasksQuery, IEnumerable<AlgoTaskResponse>>
+public class GetAlgoTasksQueryHandler : IRequestHandler<GetAlgoTasksQuery, PagedList<AlgoTaskResponse>>
 {
     private readonly IAlgoTasksRepository _algoTasksRepository;
     private readonly ICurrentUserService _currentUser;
@@ -21,16 +26,17 @@ public class GetAlgoTasksQueryHandler : IRequestHandler<GetAlgoTasksQuery, IEnum
         _currentUser = currentUser;
     }
 
-    public async Task<IEnumerable<AlgoTaskResponse>> Handle(GetAlgoTasksQuery request,
+    public async Task<PagedList<AlgoTaskResponse>> Handle(GetAlgoTasksQuery request,
         CancellationToken cancellationToken)
     {
-        var tasks = await _algoTasksRepository.GetAsync();
+        var tasks = await _algoTasksRepository.GetAsync(request.SearchTerm, request.AlgoCategoryId, request.SortColumn,
+            request.SortOrder, request.Page, request.PageSize);
         if (!_currentUser.IsAuthenticated)
         {
-            return tasks.Select(t => t.ToResponse(Functions.GetTaskSupportedLanguages(t), t.CodeSnippets, false));
+            return tasks.Map(t => t.ToResponse(Functions.GetTaskSupportedLanguages(t), t.CodeSnippets, false));
         }
 
-        return tasks.Select(t => t.ToResponse(Functions.GetTaskSupportedLanguages(t), t.CodeSnippets,
+        return tasks.Map(t => t.ToResponse(Functions.GetTaskSupportedLanguages(t), t.CodeSnippets,
             t.PassedBy.Any(u => u.Id == _currentUser.UserId.Value)));
     }
 }

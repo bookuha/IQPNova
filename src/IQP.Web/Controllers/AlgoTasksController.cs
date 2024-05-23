@@ -1,4 +1,5 @@
-﻿using IQP.Application.Usecases.AlgoTasks;
+﻿using System.ComponentModel.DataAnnotations;
+using IQP.Application.Usecases.AlgoTasks;
 using IQP.Application.Usecases.AlgoTasks.Create;
 using IQP.Application.Usecases.AlgoTasks.Get;
 using IQP.Application.Usecases.AlgoTasks.GetById;
@@ -104,10 +105,12 @@ public class AlgoTasksController : ControllerBase
     }
     
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<AlgoTaskResponse>>> GetAlgoTasks()
+    public async Task<ActionResult<IEnumerable<AlgoTaskResponse>>> GetAlgoTasks(string? searchTerm, Guid? algoCategoryId,
+        string? sortColumn, string? sortOrder, [Range(1, int.MaxValue)] int page = 1, [Range(1,30)] int pageSize = 15)
     {
-        var result = await _mediator.Send(new GetAlgoTasksQuery());
-        
+        var result =
+            await _mediator.Send(new GetAlgoTasksQuery(searchTerm, algoCategoryId, sortColumn, sortOrder, page, pageSize));
+
         return Ok(result);
     }
     

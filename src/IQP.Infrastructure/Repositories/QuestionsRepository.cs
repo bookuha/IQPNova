@@ -1,6 +1,8 @@
-﻿using IQP.Domain.Entities;
+﻿using System.Linq.Expressions;
+using IQP.Domain.Entities;
 using IQP.Domain.Repositories;
 using IQP.Infrastructure.Data;
+using IQP.Shared;
 using Microsoft.EntityFrameworkCore;
 
 namespace IQP.Infrastructure.Repositories;
@@ -23,17 +25,51 @@ public class QuestionsRepository : IQuestionsRepository
                 .Include(q=>q.Creator)
                 .SingleOrDefaultAsync(q => q.Id == id, cancellationToken: cancellationToken);
     }
-
-    public Task<List<Question>> GetAsync(CancellationToken cancellationToken = default)
+    
+    public Task<PagedList<Question>> GetAsync(string? searchTerm, Guid? categoryId, string? sortColumn, string? sortOrder, int? page, int? pageSize, CancellationToken cancellationToken = default)
     {
-        return _dbContext.Questions
+        IQueryable<Question> questionsQuery = _dbContext.Questions;
+
+        if (categoryId is not null)
+        {
+            questionsQuery = questionsQuery.Where(q => q.CategoryId == categoryId);
+        }
+        
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            questionsQuery = questionsQuery.Where(q =>
+                q.Title.Contains(searchTerm));
+        }
+        
+        if (sortOrder?.ToLower() == "asc")
+        {
+            questionsQuery = questionsQuery.OrderBy(GetSortProperty(sortColumn));
+        }
+        else
+        {
+            questionsQuery = questionsQuery.OrderByDescending(GetSortProperty(sortColumn));
+        }
+
+        questionsQuery = questionsQuery
             .Include(q => q.Category)
             .Include(q => q.LikedBy)
             .Include(q => q.Commentaries)
             .Include(q => q.Creator)
-            .AsSplitQuery()
-            .ToListAsync(cancellationToken: cancellationToken);
+            .AsSplitQuery();
+
+
+        return PagedList<Question>.CreateFromQueryAsync(questionsQuery, page, pageSize);
     }
+    
+    private static Expression<Func<Question, object>> GetSortProperty(string? sortColumn) =>
+        sortColumn?.ToLower() switch
+        {
+            "title" => question => question.Title,
+            "likes" => question => question.LikedBy.Count,
+            "commentaries" => question => question.Commentaries.Count,
+            "date" => question => question.Created,
+            _ => question => question.Id
+        };
 
     public void Add(Question question)
     {

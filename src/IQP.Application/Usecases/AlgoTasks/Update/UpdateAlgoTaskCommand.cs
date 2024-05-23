@@ -81,9 +81,9 @@ public class UpdateAlgoTaskCommandHandler : IRequestHandler<UpdateAlgoTaskComman
                 "The algo category with such id does not exist. Therefore update cannot be made.");
         }
 
-        algoTask.Title = command.Title;
-        algoTask.Description = command.Description;
-        algoTask.AlgoCategoryId = command.AlgoCategoryId;
+        //algoTask.Title = command.Title;
+        //algoTask.Description = command.Description;
+        //algoTask.AlgoCategoryId = command.AlgoCategoryId;
         
         _algoTasksRepository.Update(algoTask);
         await _unitOfWork.SaveChangesAsync(cancellationToken);

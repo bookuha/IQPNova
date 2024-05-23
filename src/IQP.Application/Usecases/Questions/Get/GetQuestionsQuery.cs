@@ -1,17 +1,17 @@
-﻿using IQP.Domain.Repositories;
-using IQP.Infrastructure.Data;
+﻿using IQP.Domain.Entities;
+using IQP.Domain.Repositories;
 using IQP.Infrastructure.Services;
+using IQP.Shared;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace IQP.Application.Usecases.Questions.Get;
 
-public record GetQuestionsQuery : IRequest<IEnumerable<QuestionResponse>>
+public record GetQuestionsQuery(string? SearchTerm, Guid? CategoryId, string? SortColumn, string? SortOrder, int Page, int PageSize) : IRequest<PagedList<QuestionResponse>>
 {
     
 }
 
-public class GetQuestionsQueryHandler : IRequestHandler<GetQuestionsQuery, IEnumerable<QuestionResponse>>
+public class GetQuestionsQueryHandler : IRequestHandler<GetQuestionsQuery, PagedList<QuestionResponse>>
 {
 
     private readonly IQuestionsRepository _questionsRepository;
@@ -23,16 +23,14 @@ public class GetQuestionsQueryHandler : IRequestHandler<GetQuestionsQuery, IEnum
         _currentUser = currentUser;
     }
 
-    public async Task<IEnumerable<QuestionResponse>> Handle(GetQuestionsQuery request, CancellationToken cancellationToken)
+    public async Task<PagedList<QuestionResponse>> Handle(GetQuestionsQuery request, CancellationToken cancellationToken)
     {
-        var questions = await _questionsRepository.GetAsync(cancellationToken);
+        var questions = await _questionsRepository.GetAsync(request.SearchTerm, request.CategoryId, request.SortColumn, request.SortOrder, request.Page, request.PageSize, cancellationToken);
         if (!_currentUser.IsAuthenticated)
         {
-            return questions
-                .Select(q => q.ToResponse(false));
+            return questions.Map(q => q.ToResponse());
         }
 
-        return questions
-            .Select(q => q.ToResponse(q.LikedBy.Any(u => u.Id == _currentUser.UserId)));
+        return questions.Map(q => q.ToResponse(q.LikedBy.Any(u => u.Id == _currentUser.UserId)));
     }
 }

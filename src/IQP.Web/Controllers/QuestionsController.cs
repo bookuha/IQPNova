@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using IQP.Application.Usecases.Questions;
 using IQP.Application.Usecases.Questions.Create;
 using IQP.Application.Usecases.Questions.Delete;
@@ -43,9 +44,11 @@ public class QuestionsController : ControllerBase
     }
     
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<QuestionResponse>>> GetQuestions()
+    public async Task<ActionResult<IEnumerable<QuestionResponse>>> GetQuestions(string? searchTerm, Guid? categoryId,
+        string? sortColumn, string? sortOrder, [Range(1, int.MaxValue)] int page = 1, [Range(1,30)] int pageSize = 15)
     {
-        var result = await _mediator.Send(new GetQuestionsQuery());
+        var result =
+            await _mediator.Send(new GetQuestionsQuery(searchTerm, categoryId, sortColumn, sortOrder, page, pageSize));
 
         return Ok(result);
     }

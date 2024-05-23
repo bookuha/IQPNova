@@ -1,6 +1,8 @@
-﻿using IQP.Domain.Entities;
+﻿using System.Linq.Expressions;
+using IQP.Domain.Entities;
 using IQP.Domain.Repositories;
 using IQP.Infrastructure.Data;
+using IQP.Shared;
 using Microsoft.EntityFrameworkCore;
 
 namespace IQP.Infrastructure.Repositories;
@@ -24,16 +26,49 @@ public class AlgoTaskRepository : IAlgoTasksRepository
             .SingleOrDefaultAsync(t=> t.Id == id, cancellationToken: cancellationToken);
     }
 
-    public Task<List<AlgoTask>> GetAsync(CancellationToken cancellationToken = default)
+    public Task<PagedList<AlgoTask>> GetAsync(string? searchTerm, Guid? algoCategoryId, string? sortColumn, string? sortOrder, int? page, int? pageSize, CancellationToken cancellationToken = default)
     {
-        return _dbContext.AlgoTasks
+        IQueryable<AlgoTask> algoTasksQuery = _dbContext.AlgoTasks;
+
+        if (algoCategoryId is not null)
+        {
+            algoTasksQuery = algoTasksQuery.Where(a => a.AlgoCategoryId == algoCategoryId);
+        }
+        
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            algoTasksQuery = algoTasksQuery.Where(a =>
+                a.Title.Contains(searchTerm));
+        }
+        
+        if (sortOrder?.ToLower() == "asc")
+        {
+            algoTasksQuery = algoTasksQuery.OrderBy(GetSortProperty(sortColumn));
+        }
+        else
+        {
+            algoTasksQuery = algoTasksQuery.OrderByDescending(GetSortProperty(sortColumn));
+        }
+
+        algoTasksQuery = algoTasksQuery
             .Include(t => t.AlgoCategory)
             .Include(t => t.CodeSnippets)
             .ThenInclude(c => c.Language)
             .Include(t => t.PassedBy)
-            .AsSplitQuery()
-            .ToListAsync(cancellationToken: cancellationToken);
+            .AsSplitQuery();
+        
+        return PagedList<AlgoTask>.CreateFromQueryAsync(algoTasksQuery, page, pageSize);
     }
+    
+    private static Expression<Func<AlgoTask, object>> GetSortProperty(string? sortColumn) =>
+        sortColumn?.ToLower() switch
+        {
+            "title" => algoTask => algoTask.Title,
+            "passed" => algoTask => algoTask.PassedBy.Count,
+            "date" => question => question.Created,
+            _ => question => question.Created
+        };
+
 
     public void Add(AlgoTask algoTask)
     {
