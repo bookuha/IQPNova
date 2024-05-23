@@ -15,7 +15,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\IQP.Shared\IQP.Shared.csproj" />
+      <ProjectReference Include="..\IQP.Shared\IQP.Shared.csproj" />
     </ItemGroup>
 
 </Project>
