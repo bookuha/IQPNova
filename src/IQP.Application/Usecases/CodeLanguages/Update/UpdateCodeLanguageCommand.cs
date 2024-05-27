@@ -1,5 +1,4 @@
 ﻿using FluentValidation;
-using IQP.Application.Contracts.CodeLanguages.Responses;
 using IQP.Application.Services;
 using IQP.Application.Services.Users;
 using IQP.Domain;
@@ -70,10 +69,7 @@ public class UpdateCodeLanguageCommandHandler : IRequestHandler<UpdateCodeLangua
                 "The code language with such name, slug or extension already exists.");
         }
         
-        language.Name = command.Name;
-        language.Slug = command.Slug;
-        language.Extension = command.Extension;
-        
+        language.Update(command.Name, command.Slug, command.Extension);
         await _db.SaveChangesAsync();
         return language.ToResponse();
     }

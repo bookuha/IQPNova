@@ -57,9 +57,8 @@ public class UpdateCategoryCommandHandler : IRequestHandler<UpdateCategoryComman
                 EntityName.Category,Errors.NotFound.ToString(), "Not found", "The category with such id does not exist.");
         }
         
-        category.Title = command.Title;
-        category.Description = command.Description;
         
+        category.Update(command.Title, command.Description);
         _db.Update(category);
         
         await _db.SaveChangesAsync();

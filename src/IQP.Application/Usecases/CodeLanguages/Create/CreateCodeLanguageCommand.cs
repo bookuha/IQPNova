@@ -1,9 +1,9 @@
 ﻿using FluentValidation;
-using IQP.Application.Contracts.CodeLanguages.Responses;
 using IQP.Application.Services;
 using IQP.Application.Services.Users;
 using IQP.Domain;
 using IQP.Domain.Entities;
+using IQP.Domain.Entities.AlgoTasks;
 using IQP.Domain.Exceptions;
 using IQP.Domain.Repositories;
 using IQP.Infrastructure.Data;
@@ -62,12 +62,7 @@ public class CreateCodeLanguageCommandHandler : IRequestHandler<CreateCodeLangua
                 "The code language with such name, slug or extension already exists.");
         }
         
-        var codeLanguage = new CodeLanguage
-        {
-            Name = command.Name,
-            Slug = command.Slug,
-            Extension = command.Extension
-        };
+        var codeLanguage = CodeLanguage.Create(command.Name, command.Slug, command.Extension);
         
         _codeLanguagesRepository.Add(codeLanguage);
         await _unitOfWork.SaveChangesAsync(cancellationToken);

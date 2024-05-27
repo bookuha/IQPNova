@@ -1,6 +1,6 @@
-using IQP.Domain.Entities;
+using IQP.Domain.Entities.Questions;
 
-namespace IQP.Application.Usecases.Commentaries;
+namespace IQP.Application.Usecases.Questions;
 
 public class CommentaryResponse
 {

@@ -6,7 +6,7 @@ public class CreateCategoryCommandValidator : AbstractValidator<CreateCategoryCo
 {
     public CreateCategoryCommandValidator()
     {
-        RuleFor(c => c.Title).NotEmpty().Length(4, 30);
+        RuleFor(c => c.Title).NotEmpty().Length(1, 30);
         RuleFor(c => c.Description).NotEmpty().Length(4, 120);
     }
 }

@@ -66,6 +66,7 @@ public class UpdateAlgoTaskCommandHandler : IRequestHandler<UpdateAlgoTaskComman
 
         var titleAlreadyExists =
             await _algoTasksRepository.TitleExistsExceptInAsync(command.Title, command.Id, cancellationToken);
+        
         if(titleAlreadyExists)
         {
             throw new IqpException(
@@ -81,9 +82,7 @@ public class UpdateAlgoTaskCommandHandler : IRequestHandler<UpdateAlgoTaskComman
                 "The algo category with such id does not exist. Therefore update cannot be made.");
         }
 
-        //algoTask.Title = command.Title;
-        //algoTask.Description = command.Description;
-        //algoTask.AlgoCategoryId = command.AlgoCategoryId;
+        algoTask.Update(command.Title, command.Description, newAlgoCategory);
         
         _algoTasksRepository.Update(algoTask);
         await _unitOfWork.SaveChangesAsync(cancellationToken);

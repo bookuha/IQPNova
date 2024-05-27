@@ -22,7 +22,7 @@ namespace IQP.Infrastructure.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("IQP.Domain.Entities.AlgoTask", b =>
+            modelBuilder.Entity("IQP.Domain.Entities.AlgoTasks.AlgoTask", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -43,8 +43,8 @@ namespace IQP.Infrastructure.Migrations
 
                     b.Property<string>("Title")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
                     b.HasKey("Id");
 
@@ -53,7 +53,7 @@ namespace IQP.Infrastructure.Migrations
                     b.ToTable("AlgoTasks");
                 });
 
-            modelBuilder.Entity("IQP.Domain.Entities.AlgoTaskCategory", b =>
+            modelBuilder.Entity("IQP.Domain.Entities.AlgoTasks.AlgoTaskCategory", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -74,7 +74,7 @@ namespace IQP.Infrastructure.Migrations
                     b.ToTable("AlgoTaskCategories");
                 });
 
-            modelBuilder.Entity("IQP.Domain.Entities.AlgoTaskCodeSnippet", b =>
+            modelBuilder.Entity("IQP.Domain.Entities.AlgoTasks.AlgoTaskCodeSnippet", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -105,28 +105,7 @@ namespace IQP.Infrastructure.Migrations
                     b.ToTable("AlgoTaskCodeSnippet");
                 });
 
-            modelBuilder.Entity("IQP.Domain.Entities.Category", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasMaxLength(120)
-                        .HasColumnType("character varying(120)");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("character varying(30)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Categories");
-                });
-
-            modelBuilder.Entity("IQP.Domain.Entities.CodeLanguage", b =>
+            modelBuilder.Entity("IQP.Domain.Entities.AlgoTasks.CodeLanguage", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -152,7 +131,28 @@ namespace IQP.Infrastructure.Migrations
                     b.ToTable("CodeLanguages");
                 });
 
-            modelBuilder.Entity("IQP.Domain.Entities.Commentary", b =>
+            modelBuilder.Entity("IQP.Domain.Entities.Questions.Category", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Categories");
+                });
+
+            modelBuilder.Entity("IQP.Domain.Entities.Questions.Commentary", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -160,8 +160,8 @@ namespace IQP.Infrastructure.Migrations
 
                     b.Property<string>("Content")
                         .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
 
                     b.Property<DateTime>("Created")
                         .ValueGeneratedOnAdd()
@@ -188,7 +188,7 @@ namespace IQP.Infrastructure.Migrations
                     b.ToTable("Commentaries");
                 });
 
-            modelBuilder.Entity("IQP.Domain.Entities.Question", b =>
+            modelBuilder.Entity("IQP.Domain.Entities.Questions.Question", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -544,9 +544,9 @@ namespace IQP.Infrastructure.Migrations
                     b.ToTable("UsersPassedAlgoTasks");
                 });
 
-            modelBuilder.Entity("IQP.Domain.Entities.AlgoTask", b =>
+            modelBuilder.Entity("IQP.Domain.Entities.AlgoTasks.AlgoTask", b =>
                 {
-                    b.HasOne("IQP.Domain.Entities.AlgoTaskCategory", "AlgoCategory")
+                    b.HasOne("IQP.Domain.Entities.AlgoTasks.AlgoTaskCategory", "AlgoCategory")
                         .WithMany("AlgoTasks")
                         .HasForeignKey("AlgoCategoryId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -555,15 +555,15 @@ namespace IQP.Infrastructure.Migrations
                     b.Navigation("AlgoCategory");
                 });
 
-            modelBuilder.Entity("IQP.Domain.Entities.AlgoTaskCodeSnippet", b =>
+            modelBuilder.Entity("IQP.Domain.Entities.AlgoTasks.AlgoTaskCodeSnippet", b =>
                 {
-                    b.HasOne("IQP.Domain.Entities.AlgoTask", "AlgoTask")
+                    b.HasOne("IQP.Domain.Entities.AlgoTasks.AlgoTask", "AlgoTask")
                         .WithMany("CodeSnippets")
                         .HasForeignKey("AlgoTaskId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("IQP.Domain.Entities.CodeLanguage", "Language")
+                    b.HasOne("IQP.Domain.Entities.AlgoTasks.CodeLanguage", "Language")
                         .WithMany()
                         .HasForeignKey("LanguageId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -574,7 +574,7 @@ namespace IQP.Infrastructure.Migrations
                     b.Navigation("Language");
                 });
 
-            modelBuilder.Entity("IQP.Domain.Entities.Commentary", b =>
+            modelBuilder.Entity("IQP.Domain.Entities.Questions.Commentary", b =>
                 {
                     b.HasOne("IQP.Domain.Entities.User", "CreatedBy")
                         .WithMany("CreatedCommentaries")
@@ -582,13 +582,13 @@ namespace IQP.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("IQP.Domain.Entities.Question", "Question")
+                    b.HasOne("IQP.Domain.Entities.Questions.Question", "Question")
                         .WithMany("Commentaries")
                         .HasForeignKey("QuestionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("IQP.Domain.Entities.Commentary", "ReplyTo")
+                    b.HasOne("IQP.Domain.Entities.Questions.Commentary", "ReplyTo")
                         .WithMany("Replies")
                         .HasForeignKey("ReplyToId");
 
@@ -599,9 +599,9 @@ namespace IQP.Infrastructure.Migrations
                     b.Navigation("ReplyTo");
                 });
 
-            modelBuilder.Entity("IQP.Domain.Entities.Question", b =>
+            modelBuilder.Entity("IQP.Domain.Entities.Questions.Question", b =>
                 {
-                    b.HasOne("IQP.Domain.Entities.Category", "Category")
+                    b.HasOne("IQP.Domain.Entities.Questions.Category", "Category")
                         .WithMany("Questions")
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -620,7 +620,7 @@ namespace IQP.Infrastructure.Migrations
 
             modelBuilder.Entity("IQP.Domain.Entities.TechTask", b =>
                 {
-                    b.HasOne("IQP.Domain.Entities.Category", "Category")
+                    b.HasOne("IQP.Domain.Entities.Questions.Category", "Category")
                         .WithMany()
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -715,7 +715,7 @@ namespace IQP.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("IQP.Domain.Entities.Commentary", null)
+                    b.HasOne("IQP.Domain.Entities.Questions.Commentary", null)
                         .WithMany()
                         .HasForeignKey("LikedCommentariesId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -730,7 +730,7 @@ namespace IQP.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("IQP.Domain.Entities.Question", null)
+                    b.HasOne("IQP.Domain.Entities.Questions.Question", null)
                         .WithMany()
                         .HasForeignKey("LikedQuestionsId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -739,7 +739,7 @@ namespace IQP.Infrastructure.Migrations
 
             modelBuilder.Entity("UsersPassedAlgoTasks", b =>
                 {
-                    b.HasOne("IQP.Domain.Entities.AlgoTask", null)
+                    b.HasOne("IQP.Domain.Entities.AlgoTasks.AlgoTask", null)
                         .WithMany()
                         .HasForeignKey("PassedAlgoTasksId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -752,27 +752,27 @@ namespace IQP.Infrastructure.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("IQP.Domain.Entities.AlgoTask", b =>
+            modelBuilder.Entity("IQP.Domain.Entities.AlgoTasks.AlgoTask", b =>
                 {
                     b.Navigation("CodeSnippets");
                 });
 
-            modelBuilder.Entity("IQP.Domain.Entities.AlgoTaskCategory", b =>
+            modelBuilder.Entity("IQP.Domain.Entities.AlgoTasks.AlgoTaskCategory", b =>
                 {
                     b.Navigation("AlgoTasks");
                 });
 
-            modelBuilder.Entity("IQP.Domain.Entities.Category", b =>
+            modelBuilder.Entity("IQP.Domain.Entities.Questions.Category", b =>
                 {
                     b.Navigation("Questions");
                 });
 
-            modelBuilder.Entity("IQP.Domain.Entities.Commentary", b =>
+            modelBuilder.Entity("IQP.Domain.Entities.Questions.Commentary", b =>
                 {
                     b.Navigation("Replies");
                 });
 
-            modelBuilder.Entity("IQP.Domain.Entities.Question", b =>
+            modelBuilder.Entity("IQP.Domain.Entities.Questions.Question", b =>
                 {
                     b.Navigation("Commentaries");
                 });

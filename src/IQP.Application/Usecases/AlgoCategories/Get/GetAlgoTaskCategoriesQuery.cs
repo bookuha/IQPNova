@@ -1,5 +1,4 @@
-﻿using IQP.Application.Contracts.AlgoTaskCategories.Responses;
-using IQP.Domain.Repositories;
+﻿using IQP.Domain.Repositories;
 using IQP.Infrastructure.Data;
 using MediatR;
 using Microsoft.EntityFrameworkCore;

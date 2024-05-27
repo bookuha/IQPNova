@@ -1,4 +1,5 @@
 ﻿using IQP.Domain.Entities;
+using IQP.Domain.Entities.Questions;
 using IQP.Domain.Repositories;
 using IQP.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;

@@ -1,6 +1,6 @@
-﻿using IQP.Domain.Entities;
+﻿using IQP.Domain.Entities.AlgoTasks;
 
-namespace IQP.Application.Contracts.AlgoTaskCategories.Responses;
+namespace IQP.Application.Usecases.AlgoCategories;
 
 public class AlgoTaskCategoryResponse
 {

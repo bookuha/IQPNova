@@ -2,6 +2,7 @@
 using IQP.Application.Services.Users;
 using IQP.Domain;
 using IQP.Domain.Entities;
+using IQP.Domain.Entities.Questions;
 using IQP.Domain.Exceptions;
 using IQP.Domain.Repositories;
 using IQP.Infrastructure.Data;
@@ -61,14 +62,7 @@ public class CreateQuestionCommandHandler : IRequestHandler<CreateQuestionComman
         
         var user = await _userService.GetUserByIdAsync(_currentUser.UserId.Value);
 
-        var question = new Question
-        {
-            Title = command.Title,
-            Description = command.Description,
-            Creator = user,
-            CategoryId = command.CategoryId
-        };
-
+        var question = Question.Create(command.Title, command.Description, category, user!);
         _questionsRepository.Add(question);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         

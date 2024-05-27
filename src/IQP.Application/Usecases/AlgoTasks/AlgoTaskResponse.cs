@@ -1,5 +1,6 @@
-﻿using IQP.Application.Contracts.CodeLanguages.Responses;
+﻿using IQP.Application.Usecases.CodeLanguages;
 using IQP.Domain.Entities;
+using IQP.Domain.Entities.AlgoTasks;
 
 namespace IQP.Application.Usecases.AlgoTasks;
 

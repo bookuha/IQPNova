@@ -1,11 +1,8 @@
 ﻿using IQP.Domain.Repositories;
-using IQP.Infrastructure.Data;
-using IQP.Infrastructure.Repositories;
 using IQP.Infrastructure.Services;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
-namespace IQP.Application.Usecases.Commentaries.GetByQuestionId;
+namespace IQP.Application.Usecases.Questions.GetComments;
 
 public record GetCommentariesByQuestionIdQuery : IRequest<IEnumerable<CommentaryResponse>>
 {

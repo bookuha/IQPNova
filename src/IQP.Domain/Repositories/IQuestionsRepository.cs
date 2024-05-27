@@ -1,4 +1,5 @@
 ﻿using IQP.Domain.Entities;
+using IQP.Domain.Entities.Questions;
 using IQP.Shared;
 
 namespace IQP.Domain.Repositories;
@@ -10,5 +11,6 @@ public interface IQuestionsRepository
     void Add(Question question);
     void Update(Question question);
     void Delete(Question question);
+    public void AddCommentary(Question question, Commentary commentary);
     public Task<List<Commentary>> GetCommentariesByQuestionIdAsync(Guid questionId, CancellationToken cancellationToken = default);
 }

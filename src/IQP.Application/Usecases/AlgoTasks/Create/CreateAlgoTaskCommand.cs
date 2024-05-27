@@ -3,6 +3,7 @@ using IQP.Application.Services;
 using IQP.Application.Services.Users;
 using IQP.Domain;
 using IQP.Domain.Entities;
+using IQP.Domain.Entities.AlgoTasks;
 using IQP.Domain.Exceptions;
 using IQP.Domain.Repositories;
 using IQP.Infrastructure.CodeRunner;
@@ -100,21 +101,12 @@ public class CreateAlgoTaskCommandHandler : IRequestHandler<CreateAlgoTaskComman
                "The initial solution does not pass the tests. Therefore algo task cannot be created.");
        }
 
-       var algoTask = new AlgoTask
-       {
-           Title = command.Title,
-           Description = command.Description,
-           AlgoCategoryId = command.AlgoCategoryId,
-           CodeSnippets = new List<AlgoTaskCodeSnippet>
-           {
-               new()
-               {
-                   Language = language,
-                   SampleCode = command.InitialCodeSnippet.SampleCode,
-                   TestsCode = command.InitialCodeSnippet.TestsCode
-               }
-           },
-       };
+       var initialTestSuite = new TestSuite(command.InitialCodeSnippet.SampleCode, command.InitialCodeSnippet.TestsCode,
+           language);
+   
+
+       var algoTask = AlgoTask.Create(command.Title, command.Description, algoCategory, initialTestSuite);
+       
        
        _algoTasksRepository.Add(algoTask);
        await _unitOfWork.SaveChangesAsync(cancellationToken);

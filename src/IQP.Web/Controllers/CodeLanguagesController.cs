@@ -1,6 +1,4 @@
-﻿using IQP.Application.Contracts.CodeLanguages;
-using IQP.Application.Contracts.CodeLanguages.Responses;
-using IQP.Application.Services;
+﻿using IQP.Application.Usecases.CodeLanguages;
 using IQP.Application.Usecases.CodeLanguages.Create;
 using IQP.Application.Usecases.CodeLanguages.Delete;
 using IQP.Application.Usecases.CodeLanguages.Get;

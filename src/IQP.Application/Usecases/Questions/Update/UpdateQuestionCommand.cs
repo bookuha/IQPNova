@@ -1,4 +1,5 @@
 using FluentValidation;
+using IQP.Application.Services.Users;
 using IQP.Domain;
 using IQP.Domain.Exceptions;
 using IQP.Domain.Repositories;
@@ -25,18 +26,21 @@ public class UpdateQuestionCommandHandler : IRequestHandler<UpdateQuestionComman
     private readonly IUnitOfWork _unitOfWork;
     private readonly IQuestionsRepository _questionsRepository;
     private readonly ICategoriesRepository _categoriesRepository;
+    private readonly IUserService _userService;
     private readonly ICurrentUserService _currentUser;
     private readonly ILogger<UpdateQuestionCommandHandler> _logger;
     private readonly IValidator<UpdateQuestionCommand> _validator;
     
-    public UpdateQuestionCommandHandler(IUnitOfWork unitOfWork, IQuestionsRepository questionsRepository, ICategoriesRepository categoriesRepository, ICurrentUserService currentUser, ILogger<UpdateQuestionCommandHandler> logger, IValidator<UpdateQuestionCommand> validator)
+    public UpdateQuestionCommandHandler(IUnitOfWork unitOfWork, IQuestionsRepository questionsRepository, ICategoriesRepository categoriesRepository, IUserService userService, ICurrentUserService currentUser, ILogger<UpdateQuestionCommandHandler> logger, IValidator<UpdateQuestionCommand> validator)
     {
         _unitOfWork = unitOfWork;
         _questionsRepository = questionsRepository;
         _categoriesRepository = categoriesRepository;
+        _userService = userService;
         _currentUser = currentUser;
         _logger = logger;
         _validator = validator;
+        
     }
 
     public async Task<QuestionResponse> Handle(UpdateQuestionCommand command, CancellationToken cancellationToken)
@@ -65,17 +69,9 @@ public class UpdateQuestionCommandHandler : IRequestHandler<UpdateQuestionComman
                 EntityName.Question,Errors.NotFound.ToString(), "Not found", "The question with such id does not exist.");
         }
         
-        if (_currentUser.UserId != question.CreatorId)
-        {
-            throw new IqpException(
-                EntityName.Question, Errors.Restricted.ToString(), "Restricted",
-                "You are not allowed to delete this question.");
-        }
+        var user = await _userService.GetUserByIdAsync(_currentUser.UserId.Value);
 
-        question.Title = command.Title;
-        question.Description = command.Description;
-        question.CategoryId = command.CategoryId;
-        
+        question.Update(command.Title, command.Description, category, user!);
         _questionsRepository.Update(question);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         

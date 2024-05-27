@@ -1,4 +1,5 @@
 using IQP.Domain.Entities;
+using IQP.Domain.Entities.Questions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -17,7 +18,7 @@ public class CommentaryConfiguration : IEntityTypeConfiguration<Commentary>
 
         builder
             .Property<string>(c => c.Content)
-            .HasMaxLength(500)
+            .HasMaxLength(2000)
             .IsRequired();
 
         builder

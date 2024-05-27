@@ -1,5 +1,4 @@
-﻿using IQP.Application.Contracts.AlgoTaskCategories.Responses;
-using IQP.Application.Services;
+﻿using IQP.Application.Services;
 using IQP.Application.Services.Users;
 using IQP.Domain;
 using IQP.Domain.Exceptions;

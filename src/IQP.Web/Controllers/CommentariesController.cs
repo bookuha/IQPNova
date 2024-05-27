@@ -1,6 +1,6 @@
-using IQP.Application.Usecases.Commentaries;
-using IQP.Application.Usecases.Commentaries.Create;
-using IQP.Application.Usecases.Commentaries.GetByQuestionId;
+using IQP.Application.Usecases.Questions;
+using IQP.Application.Usecases.Questions.Comment;
+using IQP.Application.Usecases.Questions.GetComments;
 using IQP.Web.ViewModels.Questions;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;

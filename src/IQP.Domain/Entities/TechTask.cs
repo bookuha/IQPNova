@@ -1,3 +1,5 @@
+using IQP.Domain.Entities.Questions;
+
 namespace IQP.Domain.Entities;
 
 public class TechTask

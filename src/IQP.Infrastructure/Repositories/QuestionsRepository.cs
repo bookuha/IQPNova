@@ -1,5 +1,6 @@
 ﻿using System.Linq.Expressions;
 using IQP.Domain.Entities;
+using IQP.Domain.Entities.Questions;
 using IQP.Domain.Repositories;
 using IQP.Infrastructure.Data;
 using IQP.Shared;
@@ -84,6 +85,17 @@ public class QuestionsRepository : IQuestionsRepository
     public void Delete(Question question)
     {
         _dbContext.Questions.Remove(question);
+    }
+    
+    public void AddCommentary(Question question, Commentary commentary)
+    {
+        // Once commentary has a GUID set before upon the creation, EF, when updating the Question, will treat it as an already existing entity, therefore we have to either:
+        // 1. Preemptively add the commentary to the context and update the question.
+        // 2. Delegate the ID creation to the DB, so unitialized GUIDs are treated as new entities.
+        
+        _dbContext.Commentaries.Add(commentary);
+        question.Commentaries.Add(commentary);
+        _dbContext.Questions.Update(question);
     }
     
     public Task<List<Commentary>> GetCommentariesByQuestionIdAsync(Guid questionId, CancellationToken cancellationToken = default)

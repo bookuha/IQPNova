@@ -1,12 +1,12 @@
 ﻿using FluentValidation;
 
-namespace IQP.Application.Usecases.Commentaries.Create;
+namespace IQP.Application.Usecases.Questions.Comment;
 
 public class CreateCommentaryCommandValidator : AbstractValidator<CreateCommentaryCommand>
 {
     public CreateCommentaryCommandValidator()
     {
         RuleFor(c=>c.QuestionId).NotEmpty();
-        RuleFor(c => c.Content).MaximumLength(500);
+        RuleFor(c => c.Content).MaximumLength(2000);
     }
 }

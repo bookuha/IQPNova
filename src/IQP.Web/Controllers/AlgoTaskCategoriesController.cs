@@ -1,5 +1,4 @@
-﻿using IQP.Application.Contracts.AlgoTaskCategories.Responses;
-using IQP.Application.Services;
+﻿using IQP.Application.Usecases.AlgoCategories;
 using IQP.Application.Usecases.AlgoCategories.Create;
 using IQP.Application.Usecases.AlgoCategories.Delete;
 using IQP.Application.Usecases.AlgoCategories.Get;

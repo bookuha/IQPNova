@@ -3,6 +3,7 @@ using IQP.Application.Services;
 using IQP.Application.Services.Users;
 using IQP.Domain;
 using IQP.Domain.Entities;
+using IQP.Domain.Entities.AlgoTasks;
 using IQP.Domain.Exceptions;
 using IQP.Domain.Repositories;
 using IQP.Infrastructure.CodeRunner;
@@ -59,16 +60,6 @@ public class TranslateAlgoTaskCommandHandler : IRequestHandler<TranslateAlgoTask
                 $"{EntityName.AlgoTask}", Errors.NotFound.ToString(), "AlgoTask not found",
                 "The algo task with such id does not exist. Therefore addition cannot be made.");
         }
-
-        var supportsSuchLanguageAlready =
-            algoTask.CodeSnippets.Any(c => c.LanguageId == command.InitialCodeSnippet.LanguageId);
-
-        if (supportsSuchLanguageAlready)
-        {
-            throw new IqpException(
-                $"{EntityName.AlgoTask}", Errors.AlreadyExists.ToString(), "Already exists",
-                "The algo task already has such language support. Therefore addition cannot be made.");
-        }
         
         var language = await _codeLanguagesRepository.GetByIdAsync(command.InitialCodeSnippet.LanguageId, cancellationToken);
         
@@ -90,15 +81,10 @@ public class TranslateAlgoTaskCommandHandler : IRequestHandler<TranslateAlgoTask
                 $"{EntityName.AlgoTask}", Errors.WrongFlow.ToString(), "Not passable",
                 "The initial solution does not pass the tests. Therefore language support cannot be added.");
         }
-        
-        var codeSnippet = new AlgoTaskCodeSnippet
-        {
-            Language = language,
-            SampleCode = command.InitialCodeSnippet.SampleCode,
-            TestsCode = command.InitialCodeSnippet.TestsCode
-        };
-        
-        algoTask.CodeSnippets.Add(codeSnippet); 
+
+        var codeSnippet = new TestSuite(command.InitialCodeSnippet.SampleCode, command.InitialCodeSnippet.TestsCode,
+            language);
+        algoTask.AddTranslation(codeSnippet); 
         _algoTasksRepository.Update(algoTask);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 

@@ -42,16 +42,7 @@ public class LikeQuestionCommandHandler : IRequestHandler<LikeQuestionCommand, Q
         
         var currentUser = await _userService.GetUserByIdAsync(_currentUser.UserId.Value);
 
-        var isLikedAlready = question.LikedBy.Any(u=>u.Id == _currentUser.UserId);
-        
-        if (isLikedAlready)
-        {
-            question.LikedBy.Remove(currentUser);
-        }
-        else
-        {
-            question.LikedBy.Add(currentUser);
-        }
+        question.Like(currentUser!);
         
         _questionsRepository.Update(question);
         await _unitOfWork.SaveChangesAsync(cancellationToken);

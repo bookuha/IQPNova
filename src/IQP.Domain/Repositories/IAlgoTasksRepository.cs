@@ -1,4 +1,5 @@
 ﻿using IQP.Domain.Entities;
+using IQP.Domain.Entities.AlgoTasks;
 using IQP.Shared;
 
 namespace IQP.Domain.Repositories;

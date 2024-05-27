@@ -1,4 +1,5 @@
 ﻿using IQP.Domain.Entities;
+using IQP.Domain.Entities.Questions;
 
 namespace IQP.Domain.Repositories;
 

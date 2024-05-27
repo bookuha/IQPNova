@@ -3,6 +3,7 @@ using IQP.Application.Services;
 using IQP.Application.Services.Users;
 using IQP.Domain;
 using IQP.Domain.Entities;
+using IQP.Domain.Entities.Questions;
 using IQP.Domain.Exceptions;
 using IQP.Domain.Repositories;
 using IQP.Infrastructure.Data;
@@ -67,12 +68,7 @@ public class CreateCategoryCommandHandler : IRequestHandler<CreateCategoryComman
                 EntityName.Category,Errors.AlreadyExists.ToString(), "Already exists", "The category with such title already exists.");
         }
 
-        var category = new Category
-        {
-            Title = command.Title,
-            Description = command.Description
-        };
-
+        var category = Category.Create(command.Title, command.Description);
         _categoriesRepository.Add(category);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         

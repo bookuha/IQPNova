@@ -85,7 +85,7 @@ public class SubmitAlgoTaskSolutionCommandHandler : IRequestHandler<SubmitAlgoTa
 
         if (result.Status is TestStatus.Pass && !algoTask.PassedBy.Any(u => u.Id == user.Id))
         {
-            algoTask.PassedBy.Add(user);
+            algoTask.AddPassedBy(user);
             _algoTasksRepository.Update(algoTask);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
         }

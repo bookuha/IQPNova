@@ -1,5 +1,4 @@
 ﻿using FluentValidation;
-using IQP.Application.Contracts.AlgoTaskCategories.Responses;
 using IQP.Application.Services.Users;
 using IQP.Domain;
 using IQP.Domain.Exceptions;
@@ -68,9 +67,7 @@ public class UpdateAlgoTaskCategoryCommandHandler : IRequestHandler<UpdateAlgoTa
             throw new IqpException(EntityName.AlgoCategory, Errors.NotFound.ToString(), "Not found", "The category with such id does not exist.");
         }
 
-        category.Title = command.Title;
-        category.Description = command.Description;
-
+        category.Update(command.Title, command.Description);
         _algoCategoriesRepository.Update(category);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 

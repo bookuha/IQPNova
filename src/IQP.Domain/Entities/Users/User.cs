@@ -1,3 +1,5 @@
+using IQP.Domain.Entities.AlgoTasks;
+using IQP.Domain.Entities.Questions;
 using Microsoft.AspNetCore.Identity;
 
 namespace IQP.Domain.Entities;

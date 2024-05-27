@@ -1,9 +1,9 @@
 ﻿using FluentValidation;
-using IQP.Application.Contracts.AlgoTaskCategories.Responses;
 using IQP.Application.Services;
 using IQP.Application.Services.Users;
 using IQP.Domain;
 using IQP.Domain.Entities;
+using IQP.Domain.Entities.AlgoTasks;
 using IQP.Domain.Exceptions;
 using IQP.Domain.Repositories;
 using IQP.Infrastructure.Data;
@@ -67,11 +67,7 @@ public class CreateAlgoTaskCategoryCommandHandler : IRequestHandler<CreateAlgoTa
                 EntityName.AlgoCategory,Errors.AlreadyExists.ToString(), "Already exists", "The category with such title already exists.");
         }
 
-        var category = new AlgoTaskCategory
-        {
-            Title = command.Title,
-            Description = command.Description
-        };
+        var category = AlgoTaskCategory.Create(command.Title, command.Description);
 
         _algoCategoriesRepository.Add(category);
         await _unitOfWork.SaveChangesAsync(cancellationToken);

@@ -23,6 +23,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IQP.Application.Integration
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IQP.Shared", "src\IQP.Shared\IQP.Shared.csproj", "{B1D61CE2-6093-4AA1-994C-F09FF63824CD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IQP.Domain.UnitTests", "tests\IQP.Domain.UnitTests\IQP.Domain.UnitTests.csproj", "{00B2D3D9-1296-4BBF-844E-97EF856FEA95}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -69,5 +71,9 @@ Global
 		{B1D61CE2-6093-4AA1-994C-F09FF63824CD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B1D61CE2-6093-4AA1-994C-F09FF63824CD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B1D61CE2-6093-4AA1-994C-F09FF63824CD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{00B2D3D9-1296-4BBF-844E-97EF856FEA95}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{00B2D3D9-1296-4BBF-844E-97EF856FEA95}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{00B2D3D9-1296-4BBF-844E-97EF856FEA95}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{00B2D3D9-1296-4BBF-844E-97EF856FEA95}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
