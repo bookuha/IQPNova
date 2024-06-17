@@ -17,6 +17,7 @@ public class AlgoTask
     public ICollection<AlgoTaskCodeSnippet> CodeSnippets { get; private set; } = new HashSet<AlgoTaskCodeSnippet>();
     
     public ICollection<User> PassedBy { get; private set; } = new HashSet<User>();
+    public HashSet<User> LikedBy { get; private set; } = new HashSet<User>();
 
     public static AlgoTask Create(string title, string description, AlgoTaskCategory category, TestSuite initialTestSuite)
     {

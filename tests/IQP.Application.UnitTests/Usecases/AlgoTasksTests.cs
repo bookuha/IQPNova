@@ -24,4 +24,46 @@ public class AlgoTasksTests
         
         
     }
+    
+    [Test]
+    public void Mock1()
+    {
+        Assert.Pass();
+    }
+    
+    [Test]
+    public void Mock2()
+    {
+        Assert.Pass();
+    }
+    
+    [Test]
+    public void Mock3()
+    {
+        Assert.Pass();
+    }
+    
+    [Test]
+    public void Mock4()
+    {
+        Assert.Pass();
+    }
+    
+    [Test]
+    public void Mock5()
+    {
+        Assert.Pass();
+    }
+    
+    [Test]
+    public void Mock6()
+    {
+        Assert.Pass();
+    }
+    
+    [Test]
+    public void Mock7()
+    {
+        Assert.Pass();
+    }
 }

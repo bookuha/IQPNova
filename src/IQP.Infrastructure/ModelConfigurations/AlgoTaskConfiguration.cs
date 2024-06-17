@@ -34,6 +34,11 @@ public class AlgoTaskConfiguration : IEntityTypeConfiguration<AlgoTask>
             .WithOne(cs => cs.AlgoTask)
             .HasForeignKey(cs => cs.AlgoTaskId)
             .IsRequired();
+        
+        builder
+            .HasMany(a => a.LikedBy)
+            .WithMany(u => u.LikedAlgoTasks)
+            .UsingEntity("UsersLikedAlgoTasks");
 
         builder
             .HasMany(t => t.PassedBy)
