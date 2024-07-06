@@ -36,8 +36,6 @@ public class IqpDbContext : IdentityDbContext<User, IdentityRole<Guid>, Guid>
         modelBuilder.ApplyConfiguration(new QuestionConfiguration());
         modelBuilder.ApplyConfiguration(new CategoryConfiguration());
         modelBuilder.ApplyConfiguration(new CommentaryConfiguration());
-        modelBuilder.ApplyConfiguration(new TechTaskConfiguration());
-        modelBuilder.ApplyConfiguration(new TechTaskSubmissionConfiguration());
         modelBuilder.ApplyConfiguration(new AlgoTaskConfiguration());
         modelBuilder.ApplyConfiguration(new AlgoTaskCategoryConfiguration());
         modelBuilder.ApplyConfiguration(new CodeLanguageConfiguration());
