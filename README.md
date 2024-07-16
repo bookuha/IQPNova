@@ -42,7 +42,7 @@ I am planning to add more documentation on Code Running process specifically.
 
 ![image](https://github.com/user-attachments/assets/23b8fff7-fc8f-4769-9231-ec5b387d6f33)
 
-![image](https://github.com/user-attachments/assets/7852a406-17b0-435e-b8da-a4da39445420)
+![image](https://github.com/user-attachments/assets/bcb66f59-f282-4666-8e31-fc3df0edfaf5)
 
 ![image](https://github.com/user-attachments/assets/9d222fc0-b283-4133-b3ca-d749fc3419e5)
 
