@@ -4,21 +4,27 @@
 
 IQP (*Interview Questions Portal/Practice*) is a web application that allows you to practice your tech interviewing skills by:
 - Answering **theoretical** interview questions (like "What is the difference between `let` and `const`?")
-- Solving **coding** problems (LeetCode like) 
-- Passing complex **test** tasks (like "Create a simple REST API")
+- Solving **coding** problems (LeetCode like: "Reverse integer", "Validate palindrome")
+
+The content of the platform is populated by users (theory) and special admin users (coding problems).  
 
 ### What is done
 
-- **User.** Registration, authentication and authorization (two layered) (JWT, but without refresh tokens), administrators, etc.
+- **Users.** Registration, authentication and authorization (JWT), administrators, etc.
 - **Questions.** CRUD, likes, comments, categories, special BL, etc.
-- **Coding Problems.** CRUD, submission, test submission, categories, just running arbitrary code (for FE purposes), adding new languages, special BL, etc.
+- **Coding Problems.** CRUD, submission, test submission, categories, adding new languages, special BL, etc.
 
 ### Installation
 
-You can run the project with Docker. Just run `docker compose up` in the root directory.
-Migrations are applied automatically.
-At the moment, only Docker is supported, but soon local running will be available again. 
-Frontend service will be added to the compose soon.
+There are two ways to setup the project:
+
+Docker: run docker compose up while in the root directory of the project
+
+Terraform with DigitalOcean: 
+1) Go to the terraform/digital_ocean directory
+2) Obtain your DigitalOcean Private Access Token and SSH private key. Set them up conveniently, such as by creating a terraform.tfvars file and populating it with the necessary values. Refer to the [Terraform documentation](https://registry.terraform.io/providers/terraform-redhat/rhcs/latest/docs/guides/terraform-vars) for guidance.
+3) Execute terraform init, terraform plan (optional) and terraform apply to deploy the project
+
 
 ### Documentation
 
