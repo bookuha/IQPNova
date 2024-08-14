@@ -1,0 +1,23 @@
+﻿#!groovy
+
+properties([disableConcurrentBuilds()])
+
+pipeline {
+    agent {
+        label 'master'
+        }
+    options {
+        buildDiscarder(logRotator(numToKeepStr: '10', artifactNumToKeepStr: '10'))
+        timestamps()
+    }
+    stages {
+        stage("Create Docker Image") {
+            steps {
+                echo "=== Creating Docker Image ==="
+                dir ('src/IQP.Web') {
+                    sh 'docker build .'
+                }
+            }
+        }
+    }
+}
