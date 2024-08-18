@@ -1,10 +1,9 @@
-﻿properties([disableConcurrentBuilds()])
-
-pipeline {
+﻿pipeline {
     agent any
     options {
         buildDiscarder(logRotator(numToKeepStr: '10', artifactNumToKeepStr: '10'))
         timestamps()
+        disableConcurrentBuilds()
     }
     stages {
         stage("Create Docker Image") {
